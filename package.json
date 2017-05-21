@@ -1,0 +1,19 @@
+{
+  "name": "LookingForPlayers",
+  "version": "0.0.1",
+  "main": "src/bot.js",
+  "repository": "https://github.com/starsky135/LookingForPlayers.git",
+  "author": "LFG Development Team",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^11.1.0",
+    "dotenv": "^4.0.0",
+    "moment": "^2.18.1"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0"
+  }
+}
