@@ -1,2 +1,2 @@
-# LookingForPlayers
+# LookingForGroup
 A Discord bot for matchmaking.
