@@ -11,7 +11,7 @@ require('dotenv').config();
 //This can be changed pretty easily to take only a guild as an argument instead of replying to a command if necessary
 function setupGuild(message, guild) {
     if (config.data[guild.id]) {
-        message.channel.send('This server is already set up.');
+        return message.channel.send('This server is already set up.');
     } else {
         Promise.all([
             guild.createRole({
@@ -26,6 +26,16 @@ function setupGuild(message, guild) {
     }
 }
 
+function addGame(msg) {
+    var guild = msg.guild,
+        params = msg.content.split(" ").slice(1);
+    config.addGame(guild, params[0]).then(value => {
+        msg.reply(`Added ${params[0]} to the verified games list.`)
+
+    }).catch(msg.reply("An uknown error occured is the game arleady added?"));
+
+}
+
 function help(msg) {
     msg.channel.send(`Here are my available commands:
       \`!lfg PARAMS\`  - Creates a new guild
@@ -35,30 +45,37 @@ function help(msg) {
 
 function addLFG(msg) {
     var author = msg.author,
-    guild = msg.guild,
-    params = msg.content.split(" ").slice(1);
-    msg.guild.createRole({
-            name: 'TEMP'
+        guild = msg.guild,
+        params = msg.content.split(" ").slice(1);
+    config.getGame(guild, params[0])
+        .then(result => {
+
+            if (result === false) {
+                return msg.reply("Invalid game specified (Please contact server Admin to add the game).\n  Alternatively, if you are an Admin use the !lfgadd command.")
+            }
+            msg.guild.createRole({
+                    name: 'TEMP'
+                })
+                .then(role => {
+                    role.edit({
+                        name: role.id
+                    })
+                    msg.member.addRole(role).then(() => {
+                        msg.channel.clone(role.name, true)
+                            .then(channel => {
+                                channel.overwritePermissions(msg.guild.id, {
+                                    "SEND_MESSAGES": false
+                                })
+                                channel.overwritePermissions(role, {
+                                    "SEND_MESSAGES": true
+                                })
+                                config.createSession(guild, author, role, params[0]) // Testing params for now
+                                config.addUser(guild, role, author)
+                                createdCMessage(channel);
+                            }).catch(console.error)
+                    });
+                }).catch(console.error)
         })
-        .then(role => {
-            role.edit({
-                name: role.id
-            })
-            msg.member.addRole(role).then(() => {
-                msg.channel.clone(role.name, true)
-                    .then(channel => {
-                        channel.overwritePermissions(msg.guild.id, {
-                            "SEND_MESSAGES": false
-                        })
-                        channel.overwritePermissions(role, {
-                            "SEND_MESSAGES": true
-                        })
-                        config.createSession(guild, author, role, params[0], params[1]) // Testing params for now
-                        config.addUser(guild, role, author)
-                        createdCMessage(channel);
-                    }).catch(console.error)
-            });
-        }).catch(console.error);
 
     function createdCMessage(channel) {
         msg.reply(`Game created in <#${channel.id}>`)
@@ -90,6 +107,8 @@ bot.on('message', message => {
         help(message);
     } else if (message.content.split(" ")[0] === '!lfg') { // Creates a new guild
         addLFG(message);
+    } else if (message.content.split(" ")[0] === '!lfgadd') {
+        addGame(message);
     }
 });
 

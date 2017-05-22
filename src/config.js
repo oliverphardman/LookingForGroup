@@ -38,8 +38,7 @@ config.getUser = function(guild, user) {
 };
 
 config.createSession = function(guild, user, role, game) {
-    //if (game === undefined) { return } 
-    if (config.data[guild.id] === undefined){
+    if (config.data[guild.id] === undefined) {
         config.data[guild.id] = {}
     }
     config.data[guild.id][role.id] = {
@@ -47,4 +46,41 @@ config.createSession = function(guild, user, role, game) {
         members: []
     }
     config.save();
+};
+
+config.addGame = function(guild, game) {
+    return new Promise((resolve, reject) => {
+        try {
+
+            if (config.data[guild.id].games === undefined) {
+                config.data[guild.id] = {
+                    games: []
+                }
+            } else if (config.data[guild.id].games.hasOwnProperty(game)) {
+                reject(false)
+            }
+            config.data[guild.id].games.push(game)
+            config.save()
+            resolve(true)
+        } catch (err) {
+            console.error(err)
+            reject(err)
+        }
+    });
+}
+
+config.getGame = function(guild, game) {
+    return new Promise((resolve, reject) => {
+        try {
+            if (config.data[guild.id].games.indexOf(game) === -1) {
+                resolve(false)
+            } else {
+                resolve(true)
+            }
+        } catch (err) {
+            console.error(err)
+            resolve(false)
+        }
+    })
+
 }
