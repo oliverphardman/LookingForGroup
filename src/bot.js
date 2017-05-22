@@ -26,6 +26,13 @@ function setupGuild(message, guild) {
     }
 }
 
+function help(msg) {
+    msg.channel.send(`Here are my available commands:
+      \`!lfg PARAMS\`  - Creates a new guild
+      \`!lfg kill\`  - Kills me
+      \`!lfg help\`  - Shows this dialog (help)`);
+}
+
 function addLFG(msg) {
     var author = msg.author,
     guild = msg.guild,
@@ -75,11 +82,13 @@ bot.on('ready', () => {
 bot.on('message', message => {
     if (message.author.bot) return;
 
-    if (message.content === '!lfg kill') {
+    if (message.content === '!lfg kill') { // (Literally) kills the bot
         process.exit(0);
-    } else if (message.content === '!lfg setup') {
+    } else if (message.content === '!lfg setup') { //
         setupGuild(message, message.guild);
-    } else if (message.content.split(" ")[0] === '!lfg') {
+    } else if (message.content === '!lfg help') { // Help command (sends a description about the bot)
+        help(message);
+    } else if (message.content.split(" ")[0] === '!lfg') { // Creates a new guild
         addLFG(message);
     }
 });
@@ -88,4 +97,4 @@ process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
 });
 
-bot.login();
+bot.login("process.env.TOKEN");
