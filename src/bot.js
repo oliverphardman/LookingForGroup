@@ -26,25 +26,35 @@ function setupGuild(message, guild) {
     }
 }
 
-function addLFG(message) {
-    var author = message.author,
-        guild = config.getGuild(message.guild);
+function addLFG(msg) {
+    var author = msg.author,
+        guild = config.getGuild(msg.guild);
+    var role;
+    var channel
+    msg.guild.createRole({name : 'TEMP'})
+    .then(role => {
+        role.edit({name : role.id})
+        msg.member.addRole(role).then(() => {
+            msg.channel.clone(role.name, true)
+            .then(channel => {
+                 channel.overwritePermissions(msg.guild.id, {"SEND_MESSAGES": false})
+                channel.overwritePermissions(r, {"SEND_MESSAGES": true})
+                config.createSession(guild,author,role)
+                config.addUser(guild,role,author)
+                createdCMessage(channel);
+             }).catch(console.error)
+         });
+    }).catch(console.error);
+    function createdCMessage(channel){
+    msg.reply(`Game created in <#${channel.id}>`)
+    }  
+}
 
-    if(guild) {
-        if(config.getUser(guild, author)) {
-            message.member.removeRole(guild.role).then(member => {
-                config.removeUser(guild, author);
-                message.reply('you are no longer marked as looking for a group.');
-            });
-        } else {
-            message.member.addRole(guild.role).then(member => {
-                config.addUser(guild, author);
-                message.reply('you have been marked as looking for a group.');
-            });
-        }
-    } else {
-        message.reply('This server needs to be set up first.');
-    }
+
+function removeLFG(message){
+
+
+
 }
 
 bot.on('ready', () => {
