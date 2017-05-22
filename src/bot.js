@@ -27,8 +27,8 @@ function setupGuild(message, guild) {
 }
 
 function addLFG(msg) {
-    var author = msg.author,
-        guild = config.getGuild(msg.guild);
+    var author = msg.author;
+    var guild = msg.guild;
     var role;
     var channel
     msg.guild.createRole({
@@ -44,10 +44,10 @@ function addLFG(msg) {
                         channel.overwritePermissions(msg.guild.id, {
                             "SEND_MESSAGES": false
                         })
-                        channel.overwritePermissions(r, {
+                        channel.overwritePermissions(role, {
                             "SEND_MESSAGES": true
                         })
-                        config.createSession(guild, author, role)
+                        config.createSession(guild, author, role, 4, "WoW") // Testing params for now
                         config.addUser(guild, role, author)
                         createdCMessage(channel);
                     }).catch(console.error)
@@ -89,4 +89,4 @@ process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
 });
 
-bot.login(process.env.TOKEN);
+bot.login("MzA0NTkyMDExNDkzNjM4MTQ1.C9o5ng.ZIPBx3ZFSgIYzD_zLuOoAMuuzf8");

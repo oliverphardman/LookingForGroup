@@ -25,7 +25,7 @@ config.getGuild = function(guild) {
 };
 
 config.addUser = function(guild, role, user) {
-    data[guild.id][role.id].members.push(user.id)
+    config.data[guild.id][role.id].members.push(user.id)
     config.save();
 };
 
@@ -39,7 +39,8 @@ config.getUser = function(guild, user) {
 };
 
 config.createSession = function(guild, user, role, max_players, game) {
-    data[guild.id][role.id] = {
+    config.data[guild.id] = {}
+    config.data[guild.id][role.id] = {
         game: this.game,
         max_players: this.max_players,
         members: []
