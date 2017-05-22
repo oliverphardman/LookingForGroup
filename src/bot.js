@@ -29,7 +29,7 @@ function setupGuild(message, guild) {
 function addLFG(msg) {
     var author = msg.author,
     guild = msg.guild,
-    params = msg.split(" ").slice(1);
+    params = msg.content.split(" ").slice(1);
     msg.guild.createRole({
             name: 'TEMP'
         })
@@ -79,7 +79,7 @@ bot.on('message', message => {
         process.exit(0);
     } else if (message.content === '!lfg setup') {
         setupGuild(message, message.guild);
-    } else if (message.content === '!lfg') {
+    } else if (message.content.split(" ")[0] === '!lfg') {
         addLFG(message);
     }
 });
