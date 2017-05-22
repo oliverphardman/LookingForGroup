@@ -38,7 +38,7 @@ config.getUser = function(guild, user) {
 };
 
 config.createSession = function(guild, user, role, game) {
-    if (game === undefined) { return } 
+    //if (game === undefined) { return } 
     if (config.data[guild.id] === undefined){
         config.data[guild.id] = {}
     }
@@ -46,4 +46,5 @@ config.createSession = function(guild, user, role, game) {
         game: game,
         members: []
     }
+    config.save();
 }
