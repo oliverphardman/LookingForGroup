@@ -10,7 +10,7 @@ require('dotenv').config();
 
 //This can be changed pretty easily to take only a guild as an argument instead of replying to a command if necessary
 function setupGuild(message, guild) {
-    if(config.data[guild.id]) {
+    if (config.data[guild.id]) {
         message.channel.send('This server is already set up.');
     } else {
         Promise.all([
@@ -26,25 +26,50 @@ function setupGuild(message, guild) {
     }
 }
 
-function addLFG(message) {
-    var author = message.author,
-        guild = config.getGuild(message.guild);
+function help(msg) {
+    msg.channel.send(`Here are my available commands:
+      \`!lfg PARAMS\`  - Creates a new guild
+      \`!lfg kill\`  - Kills me
+      \`!lfg help\`  - Shows this dialog (help)`);
+}
 
-    if(guild) {
-        if(config.getUser(guild, author)) {
-            message.member.removeRole(guild.role).then(member => {
-                config.removeUser(guild, author);
-                message.reply('you are no longer marked as looking for a group.');
+function addLFG(msg) {
+    var author = msg.author,
+    guild = msg.guild,
+    params = msg.content.split(" ").slice(1);
+    msg.guild.createRole({
+            name: 'TEMP'
+        })
+        .then(role => {
+            role.edit({
+                name: role.id
+            })
+            msg.member.addRole(role).then(() => {
+                msg.channel.clone(role.name, true)
+                    .then(channel => {
+                        channel.overwritePermissions(msg.guild.id, {
+                            "SEND_MESSAGES": false
+                        })
+                        channel.overwritePermissions(role, {
+                            "SEND_MESSAGES": true
+                        })
+                        config.createSession(guild, author, role, params[0], params[1]) // Testing params for now
+                        config.addUser(guild, role, author)
+                        createdCMessage(channel);
+                    }).catch(console.error)
             });
-        } else {
-            message.member.addRole(guild.role).then(member => {
-                config.addUser(guild, author);
-                message.reply('you have been marked as looking for a group.');
-            });
-        }
-    } else {
-        message.reply('This server needs to be set up first.');
+        }).catch(console.error);
+
+    function createdCMessage(channel) {
+        msg.reply(`Game created in <#${channel.id}>`)
     }
+}
+
+
+function removeLFG(message) {
+
+
+
 }
 
 bot.on('ready', () => {
@@ -55,13 +80,15 @@ bot.on('ready', () => {
 });
 
 bot.on('message', message => {
-    if(message.author.bot) return;
+    if (message.author.bot) return;
 
-    if(message.content === '!lfg kill') {
+    if (message.content === '!lfg kill') { // (Literally) kills the bot
         process.exit(0);
-    } else if(message.content === '!lfg setup') {
+    } else if (message.content === '!lfg setup') { //
         setupGuild(message, message.guild);
-    } else if(message.content === '!lfg') {
+    } else if (message.content === '!lfg help') { // Help command (sends a description about the bot)
+        help(message);
+    } else if (message.content.split(" ")[0] === '!lfg') { // Creates a new guild
         addLFG(message);
     }
 });
@@ -70,4 +97,4 @@ process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
 });
 
-bot.login(process.env.TOKEN);
+bot.login("process.env.TOKEN");
