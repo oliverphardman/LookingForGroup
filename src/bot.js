@@ -10,7 +10,7 @@ require('dotenv').config();
 
 //This can be changed pretty easily to take only a guild as an argument instead of replying to a command if necessary
 function setupGuild(message, guild) {
-    if(config.data[guild.id]) {
+    if (config.data[guild.id]) {
         message.channel.send('This server is already set up.');
     } else {
         Promise.all([
@@ -31,27 +31,36 @@ function addLFG(msg) {
         guild = config.getGuild(msg.guild);
     var role;
     var channel
-    msg.guild.createRole({name : 'TEMP'})
-    .then(role => {
-        role.edit({name : role.id})
-        msg.member.addRole(role).then(() => {
-            msg.channel.clone(role.name, true)
-            .then(channel => {
-                 channel.overwritePermissions(msg.guild.id, {"SEND_MESSAGES": false})
-                channel.overwritePermissions(r, {"SEND_MESSAGES": true})
-                config.createSession(guild,author,role)
-                config.addUser(guild,role,author)
-                createdCMessage(channel);
-             }).catch(console.error)
-         });
-    }).catch(console.error);
-    function createdCMessage(channel){
-    msg.reply(`Game created in <#${channel.id}>`)
-    }  
+    msg.guild.createRole({
+            name: 'TEMP'
+        })
+        .then(role => {
+            role.edit({
+                name: role.id
+            })
+            msg.member.addRole(role).then(() => {
+                msg.channel.clone(role.name, true)
+                    .then(channel => {
+                        channel.overwritePermissions(msg.guild.id, {
+                            "SEND_MESSAGES": false
+                        })
+                        channel.overwritePermissions(r, {
+                            "SEND_MESSAGES": true
+                        })
+                        config.createSession(guild, author, role)
+                        config.addUser(guild, role, author)
+                        createdCMessage(channel);
+                    }).catch(console.error)
+            });
+        }).catch(console.error);
+
+    function createdCMessage(channel) {
+        msg.reply(`Game created in <#${channel.id}>`)
+    }
 }
 
 
-function removeLFG(message){
+function removeLFG(message) {
 
 
 
@@ -65,13 +74,13 @@ bot.on('ready', () => {
 });
 
 bot.on('message', message => {
-    if(message.author.bot) return;
+    if (message.author.bot) return;
 
-    if(message.content === '!lfg kill') {
+    if (message.content === '!lfg kill') {
         process.exit(0);
-    } else if(message.content === '!lfg setup') {
+    } else if (message.content === '!lfg setup') {
         setupGuild(message, message.guild);
-    } else if(message.content === '!lfg') {
+    } else if (message.content === '!lfg') {
         addLFG(message);
     }
 });

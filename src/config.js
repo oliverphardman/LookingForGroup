@@ -5,7 +5,9 @@ const config = module.exports = {
 
 config.save = function() {
     fs.writeFile("../data/config.json", JSON.stringify(config.data), err => {
-        if(err) { throw err; }
+        if (err) {
+            throw err;
+        }
     });
 };
 
@@ -22,7 +24,7 @@ config.getGuild = function(guild) {
     return config.data[guild.id];
 };
 
-config.addUser = function(guild,role, user) {
+config.addUser = function(guild, role, user) {
     data[guild.id][role.id].members.push(user.id)
     config.save();
 };
@@ -36,7 +38,7 @@ config.getUser = function(guild, user) {
     return guild.users[user.id];
 };
 
-config.createSession = function(guild,user,role,max_players,game ) {
+config.createSession = function(guild, user, role, max_players, game) {
     data[guild.id][role.id] = {
         game: this.game,
         max_players: this.max_players,
