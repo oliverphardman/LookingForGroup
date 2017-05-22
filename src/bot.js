@@ -27,10 +27,8 @@ function setupGuild(message, guild) {
 }
 
 function addLFG(msg) {
-    var author = msg.author;
-    var guild = msg.guild;
-    var role;
-    var channel
+    var author = msg.author,
+    guild = msg.guild;
     msg.guild.createRole({
             name: 'TEMP'
         })
