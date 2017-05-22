@@ -88,4 +88,4 @@ process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
 });
 
-bot.login("MzA0NTkyMDExNDkzNjM4MTQ1.C9o5ng.ZIPBx3ZFSgIYzD_zLuOoAMuuzf8");
+bot.login();
