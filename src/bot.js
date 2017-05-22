@@ -97,4 +97,4 @@ process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
 });
 
-bot.login("process.env.TOKEN");
+bot.login(process.env.TOKEN);
