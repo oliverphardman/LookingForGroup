@@ -16,7 +16,6 @@ config.addGuild = function(id, role_id) {
         role: role_id,
         users: {}
     };
-
     config.save();
 };
 
@@ -38,13 +37,13 @@ config.getUser = function(guild, user) {
     return guild.users[user.id];
 };
 
-config.createSession = function(guild, user, role, max_players, game) {
-    if (game === undefined) {game = "Generic Game"}
-    if (max_players === undefined) {max_players = 10}
-    config.data[guild.id] = {}
+config.createSession = function(guild, user, role, game) {
+    if (game === undefined) { return } 
+    if (config.data[guild.id] === undefined){
+        config.data[guild.id] = {}
+    }
     config.data[guild.id][role.id] = {
         game: game,
-        max_players: max_players,
         members: []
     }
 }
