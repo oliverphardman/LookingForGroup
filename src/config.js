@@ -39,10 +39,11 @@ config.getUser = function(guild, user) {
 };
 
 config.createSession = function(guild, user, role, max_players, game) {
+    
     config.data[guild.id] = {}
     config.data[guild.id][role.id] = {
-        game: this.game,
-        max_players: this.max_players,
+        game: this.game ? "Generic Game" : this.game,
+        max_players: max_players ? 10 : this.max_players,
         members: []
     }
 }

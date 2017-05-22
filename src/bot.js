@@ -28,7 +28,8 @@ function setupGuild(message, guild) {
 
 function addLFG(msg) {
     var author = msg.author,
-    guild = msg.guild;
+    guild = msg.guild,
+    params = msg.split(" ").slice(1);
     msg.guild.createRole({
             name: 'TEMP'
         })
@@ -45,7 +46,7 @@ function addLFG(msg) {
                         channel.overwritePermissions(role, {
                             "SEND_MESSAGES": true
                         })
-                        config.createSession(guild, author, role, 4, "WoW") // Testing params for now
+                        config.createSession(guild, author, role, params[0], params[1]) // Testing params for now
                         config.addUser(guild, role, author)
                         createdCMessage(channel);
                     }).catch(console.error)
