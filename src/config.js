@@ -4,7 +4,7 @@ const config = module.exports = {
 };
 
 config.save = function() {
-    fs.writeFile("../data/config.json", JSON.stringify(config.data), err => {
+    fs.writeFile("data/config.json", JSON.stringify(config.data), err => {
         if (err) {
             throw err;
         }
@@ -52,7 +52,7 @@ config.addGame = function(guild, game) {
     return new Promise((resolve, reject) => {
         try {
 
-            if (config.data[guild.id].games === undefined) {
+            if (config.data[guild.id] === undefined || config.data[guild.id].games === undefined) {
                 config.data[guild.id] = {
                     games: []
                 }
@@ -72,7 +72,7 @@ config.addGame = function(guild, game) {
 config.getGame = function(guild, game) {
     return new Promise((resolve, reject) => {
         try {
-            if (config.data[guild.id].games.indexOf(game) === -1) {
+            if (config.data[guild.id] === undefined || config.data[guild.id].games.indexOf(game) === -1) {
                 resolve(false)
             } else {
                 resolve(true)
