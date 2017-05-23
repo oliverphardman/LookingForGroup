@@ -4,7 +4,7 @@ const config = module.exports = {
 };
 
 config.save = function () {
-    fs.writeFile("data/config.json", JSON.stringify(config.data), err => {
+    fs.writeFile("../data/config.json", JSON.stringify(config.data), err => {
         if (err) {
             throw err;
         }

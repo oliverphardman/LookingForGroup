@@ -31,7 +31,10 @@ function addGame(msg) {
         params = msg.content.split(" ").slice(1);
     config.addGame(guild, params[0]).then(value => {
         msg.reply(`Added ${params[0]} to the verified games list.`)
-    }).catch(msg.reply("An uknown error occured is the game arleady added?"));
+    }).catch(err => {
+        msg.reply("An uknown error occured is the game arleady added?")
+        consol.error(err);
+    })
 
 }
 //Help command
@@ -137,4 +140,5 @@ process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
 });
 
-bot.login(process.env.TOKEN);
+//bot.login(process.env.TOKEN);
+bot.login("MzA0NTkyMDExNDkzNjM4MTQ1.C9o5ng.ZIPBx3ZFSgIYzD_zLuOoAMuuzf8");
