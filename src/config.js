@@ -110,7 +110,20 @@ config.findSession = function(guild,game) {
         }
     })
 };
+config.findCrossGuildSession = function(game){
+    return new Promise ((resolve,reject)=> {
+        for(g in config.data){
+            for(s in config.data[g]){
+                if(config.data[g][s].game === game){
+                    resolve(g[0],r[1])
+                }    
+            }
+        }
+        resolve(false)
+    })
 
+
+}
 config.getChannelID = function(guild, session) {
     return new Promise ((resolve,reject) => {
         resolve(config.data[guild.id][session].channel)
