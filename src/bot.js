@@ -129,6 +129,7 @@ bot.on('message', message => {
 bot.on('messageReactionAdd', (reaction, user) => {
     if(reaction.emoji.name=="➕" && user.id!=bot.user.id)
         config.addUser(reaction.message.guild, config.getRoleByReaction(reaction, reaction.message.guild), user)
+        user.addRole(config.getRoleByReaction(reaction, reaction.message.guild)
 })
 
 process.on('unhandledRejection', err => {
