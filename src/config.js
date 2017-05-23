@@ -85,8 +85,6 @@ config.getGame = function (guild, game) {
     })
 };
 
-}
-
 config.getRoleByReaction = function (reaction, guild) { //https://stackoverflow.com/a/9907509
     var obj = config.data[guild.id];
     for (var prop in obj) {
