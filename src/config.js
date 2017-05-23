@@ -11,56 +11,40 @@ config.save = function () {
     });
 };
 
-config.addGuild = function (id, role_id) {
-    config.data[id] = {
-        role: role_id,
-        users: {}
-    };
+config.addUser = function(GUILD_ID, ROLE_ID, USER_ID) {
+    config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
     config.save();
 };
 
-config.getGuild = function (guild) {
-    return config.data[guild.id];
-};
-
-config.addUser = function(guild, role_id, user) {
-    config.data[guild.id][role_id].members.push(user.id)
-    config.save();
-};
-
-config.removeUser = function (guild, user) {
+/*config.removeUser = function (guild, user) {
     delete guild.users[user.id];
     config.save();
-};
+}; Needs to be re-worked */
 
-config.getUser = function (guild, user) {
-    return guild.users[user.id];
-};
-
-config.createSession = function(guild, user, role, game, channel_id,msgid) {
-    if (config.data[guild.id] === undefined) {
-        config.data[guild.id] = {}
+config.createSession = function(GUILD_ID,USER_ID, ROLE_ID, GAME, CHANNEL_ID, MESSAGE_ID) {
+    if (config.data[GUILD_ID] === undefined) {
+        config.data[GUILD_ID] = {}
     }
-    config.data[guild.id][role.id] = {
-        game: game,
-        channel: channel_id,
+    config.data[GUILD_ID][ROLE_ID] = {
+        game: GAME,
+        channel: CHANNEL_ID,
         members: [],
-        messageid: msgid
+        messageid: MESSAGE_ID
     }
     config.save();
 };
 
-config.addGame = function (guild, game) {
+config.addGame = function (GUILD_ID, GAME) {
     return new Promise((resolve, reject) => {
         try {
-            if (config.data[guild.id] === undefined || config.data[guild.id].games === undefined) {
-                config.data[guild.id] = {
+            if (config.data[GUILD_ID] === undefined || config.data[GUILD_ID].games === undefined) {
+                config.data[GUILD_ID] = {
                     games: []
                 }
-            } else if (config.data[guild.id].games.hasOwnProperty(game)) {
+            } else if (config.data[GUILD_ID].games.hasOwnProperty(GAME)) {
                 reject(false)
             }
-            config.data[guild.id].games.push(game)
+            config.data[GUILD_ID].games.push(GAME)
             config.save()
             resolve(true)
         } catch (err) {
@@ -70,10 +54,21 @@ config.addGame = function (guild, game) {
     });
 };
 
-config.getGame = function (guild, game) {
+config.removeGame = function (GUILD_ID, GAME) {
+    return new Promise((resolve, reject) => {
+        try{
+            
+            resolve(true)
+        }catch(err){
+            reject(false)
+        }
+    })
+};
+
+config.getGame = function (GUILD_ID, GAME) {
     return new Promise((resolve, reject) => {
         try {
-            if (config.data[guild.id] === undefined || config.data[guild.id].games.indexOf(game) === -1) {
+            if (config.data[GUILD_ID] === undefined || config.data[GUILD_ID].games.indexOf(GAME) === -1) {
                 resolve(false)
             } else {
                 resolve(true)
@@ -85,26 +80,25 @@ config.getGame = function (guild, game) {
     })
 };
 
-config.getRoleByReaction = function (reaction, guild) { //https://stackoverflow.com/a/9907509
-    var obj = config.data[guild.id];
+config.getRoleByReaction = function (REACTION, GUILD_ID) { //https://stackoverflow.com/a/9907509
+    var obj = config.data[GUILD_ID];
     for (var prop in obj) {
         if (obj.hasOwnProperty(prop)) {
-            if (obj[prop].messageid === reaction.message.id)
-                return prop;
+            if (obj[prop].messageid === REACTION.message.id)
+            return prop;
         }
     }
 }
 
-config.findSession = function(guild,game) {
+config.findSession = function(GUILD_ID,GAME) {
     return new Promise((resolve,reject) =>{
-        if (config.data[guild.id] === undefined) {
+        if (config.data[GUILD_ID] === undefined) {
             resolve(false)
         } else {
-            for(element in config.data[guild.id]){
-                if(config.data[guild.id][element].game === game){
+            for(element in config.data[GUILD_ID]){
+                if(config.data[GUILD_ID][element].game === GAME){
                     resolve(element)
-                }
-                
+                }        
             }
             resolve(false)
         }
@@ -115,5 +109,5 @@ config.getChannelID = function(guild, session) {
     return new Promise ((resolve,reject) => {
         resolve(config.data[guild.id][session].channel)
     })
-
+    
 };
