@@ -11,7 +11,7 @@ function addGame(MESSAGE) {
     .then(RESULT => {
         MESSAGE.reply(`Success.\n Added ${GAME} to the verified games list.`)
     }).catch(err => {
-        MESSAGE.reply(`Error.\n ${GAME} could not be removed.`);
+        MESSAGE.reply(`Error.\n ${GAME} could not be added.`);
     });
 };
 //Removes a game from the verified list
