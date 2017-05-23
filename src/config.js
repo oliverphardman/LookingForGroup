@@ -34,7 +34,7 @@ config.createSession = function(GUILD_ID,USER_ID, ROLE_ID, GAME, CHANNEL_ID, MES
     config.save();
 };
 
-config.addGame = function (GUILD_ID, GAME) {
+config.addGame = function (GUILD_ID, GAME, LIMIT) {
     return new Promise((resolve, reject) => {
         try {
             if (config.data[GUILD_ID] === undefined || config.data[GUILD_ID].games === undefined) {
@@ -44,7 +44,7 @@ config.addGame = function (GUILD_ID, GAME) {
             } else if (config.data[GUILD_ID].games.hasOwnProperty(GAME)) {
                 reject(false)
             }
-            config.data[GUILD_ID].games.push(GAME)
+            config.data[GUILD_ID].games.push([GAME, LIMIT])
             config.save()
             resolve(true)
         } catch (err) {
@@ -57,7 +57,14 @@ config.addGame = function (GUILD_ID, GAME) {
 config.removeGame = function (GUILD_ID, GAME) {
     return new Promise((resolve, reject) => {
         try{
-            
+            var newGameArray = config.data[GUILD_ID].games.filter(function(val) { // Clone the Games array wothout the selected game
+                if (val[0] === GAME) {
+                    return false;
+                }
+                return true;
+            });
+            config.data[GUILD_ID].games = newGameArray; // Update the existing games array
+            config.save();
             resolve(true)
         }catch(err){
             reject(false)
@@ -68,7 +75,13 @@ config.removeGame = function (GUILD_ID, GAME) {
 config.getGame = function (GUILD_ID, GAME) {
     return new Promise((resolve, reject) => {
         try {
-            if (config.data[GUILD_ID] === undefined || config.data[GUILD_ID].games.indexOf(GAME) === -1) {
+            var gameFound = false; // Was the game found?
+            config.data[GUILD_ID].games.filter(function(val) { // Search for the game
+                if (val[0] === GAME) {
+                    gameFound = true;
+                }
+            });
+            if (config.data[GUILD_ID] === undefined || !gameFound) {
                 resolve(false)
             } else {
                 resolve(true)
@@ -98,7 +111,7 @@ config.findSession = function(GUILD_ID,GAME) {
             for(element in config.data[GUILD_ID]){
                 if(config.data[GUILD_ID][element].game === GAME){
                     resolve(element)
-                }        
+                }
             }
             resolve(false)
         }
@@ -109,5 +122,5 @@ config.getChannelID = function(guild, session) {
     return new Promise ((resolve,reject) => {
         resolve(config.data[guild.id][session].channel)
     })
-    
+
 };
