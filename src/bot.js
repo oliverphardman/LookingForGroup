@@ -88,7 +88,7 @@ function addLFG(MESSAGE) {
                 config.addUser(GUILD_ID, FOUND, AUTHOR.id)
                 MESSAGE.member.addRole(FOUND)
                 config.getChannelID(GUILD_ID,FOUND).then(CHN => {
-                    MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}}>! :D`)
+                    MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}>! :D`)
                 })
             };
         });
