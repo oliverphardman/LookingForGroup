@@ -70,9 +70,11 @@ function addLFG(msg) {
                                 channel.overwritePermissions(role, {
                                     "SEND_MESSAGES": true
                                 })
-                                config.createSession(msg.guild, msg.author, role, params[0],channel.id) // Testing params for now
-                                config.addUser(msg.guild, role.id, msg.author)
-                                createdCMessage(channel);
+                                msg.reply(`Game created in <#${channel.id}>. Click the + reaction below to join.`)
+                                    .then(m => { m.react("➕"); return m; }).then(m => {
+                                        config.createSession(guild, author, role, params[0], m.id) // Testing params for now
+                                        config.addUser(guild, role.id, author)
+                                    });
                             }).catch(console.error)
                     });
                 }).catch(console.error)
@@ -123,6 +125,12 @@ bot.on('message', message => {
         addGame(message);
     }
 });
+
+bot.on('messageReactionAdd', (reaction, user) => {
+    if(reaction.emoji.name=="➕" && user.id!=bot.user.id)
+        config.addUser(reaction.message.guild, config.getRoleByReaction(reaction, reaction.message.guild), user)
+})
+
 process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
 });
