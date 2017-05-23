@@ -49,7 +49,7 @@ function addLFG(msg) {
     config.getGame(guild, params[0])
         .then(result => {
             if (result === false) {
-                return msg.reply("Invalid game specified (Pslease contact server Admin to add the game).\n  Alternatively, if you are an Admin use the !lfgadd command.")
+                return msg.reply("Invalid game specified (Please contact server Admin to add the game).\n  Alternatively, if you are an Admin use the !lfgadd command.")
             }
             //Search if lobby exists before creating new session (modularisation FTW)
             config.findSession(guild, params[0]).then(rek => {
