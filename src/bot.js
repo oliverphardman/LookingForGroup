@@ -25,35 +25,36 @@ function setupGuild(message, guild) {
         });
     }
 }
-
+//Adds a game to the verified list
 function addGame(msg) {
     var guild = msg.guild,
         params = msg.content.split(" ").slice(1);
     config.addGame(guild, params[0]).then(value => {
         msg.reply(`Added ${params[0]} to the verified games list.`)
-
     }).catch(msg.reply("An uknown error occured is the game arleady added?"));
 
 }
-
+//Help command
 function help(msg) {
     msg.channel.send(`Here are my available commands:
       \`!lfg PARAMS\`  - Creates a new guild
       \`!lfg kill\`  - Kills me
       \`!lfg help\`  - Shows this dialog (help)`);
 }
-
+//Assigns a user into a session
 function addLFG(msg) {
     var author = msg.author,
         guild = msg.guild,
         params = msg.content.split(" ").slice(1);
     config.getGame(guild, params[0])
         .then(result => {
-
             if (result === false) {
-                return msg.reply("Invalid game specified (Please contact server Admin to add the game).\n  Alternatively, if you are an Admin use the !lfgadd command.")
+                return msg.reply("Invalid game specified (Pslease contact server Admin to add the game).\n  Alternatively, if you are an Admin use the !lfgadd command.")
             }
-            msg.guild.createRole({
+            //Search if lobby exists before creating new session (modularisation FTW)
+            config.findSession(guild, params[0]).then(rek => {
+                if (rek === false) {
+                    msg.guild.createRole({
                     name: 'TEMP'
                 })
                 .then(role => {
@@ -69,20 +70,31 @@ function addLFG(msg) {
                                 channel.overwritePermissions(role, {
                                     "SEND_MESSAGES": true
                                 })
-                                config.createSession(guild, author, role, params[0]) // Testing params for now
-                                config.addUser(guild, role, author)
+                                config.createSession(msg.guild, msg.author, role, params[0],channel.id) // Testing params for now
+                                config.addUser(msg.guild, role.id, msg.author)
                                 createdCMessage(channel);
                             }).catch(console.error)
                     });
                 }).catch(console.error)
+                //Purely for modularisation
+                function createdCMessage(channel) {
+                 msg.reply(`Game created in <#${channel.id}>`)
+                }
+                } else {
+                    config.addUser(guild, rek, author)
+                    msg.member.addRole(rek)
+                    config.getChannelID(guild,rek).then(chn => {
+                    msg.reply(`You have been added to a session in <#${chn}>! :D`)
+                    })
+            }
+
+            })
         })
-
-    function createdCMessage(channel) {
-        msg.reply(`Game created in <#${channel.id}>`)
-    }
 }
-
-
+function newSession(msg, game){
+                
+}
+//Removes a user from a session
 function removeLFG(message) {
 
 
@@ -111,9 +123,8 @@ bot.on('message', message => {
         addGame(message);
     }
 });
-
 process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
 });
 
-bot.login(process.env.TOKEN);
+bot.login("MzA0NTkyMDExNDkzNjM4MTQ1.C9o5ng.ZIPBx3ZFSgIYzD_zLuOoAMuuzf8");
