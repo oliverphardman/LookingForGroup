@@ -105,9 +105,9 @@ config.findSession = function(GUILD_ID,GAME) {
     })
 };
 
-config.getChannelID = function(guild, session) {
+config.getChannelID = function(GUILD_ID, SESSION) {
     return new Promise ((resolve,reject) => {
-        resolve(config.data[guild.id][session].channel)
+        resolve(config.data[GUILD_ID][SESSION].channel)
     })
     
 };
