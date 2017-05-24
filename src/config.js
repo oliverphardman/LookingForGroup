@@ -16,7 +16,7 @@ config.addUser = function(GUILD_ID, ROLE_ID, USER_ID) {
       config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
       config.save()
     }
-    console.log(config.data[GUILD_ID][ROLE_ID].members)
+    //console.log(config.data[GUILD_ID][ROLE_ID].members)
 };
 
 config.removeUser = function(GUILD_ID, ROLE_ID, USER_ID) {
@@ -24,7 +24,7 @@ config.removeUser = function(GUILD_ID, ROLE_ID, USER_ID) {
     delete config.data[GUILD_ID][ROLE_ID].members.splice(config.data[GUILD_ID][ROLE_ID].members.indexOf(USER_ID), 1)
     config.save()
   }
-  console.log(config.data[GUILD_ID][ROLE_ID].members)
+  //console.log(config.data[GUILD_ID][ROLE_ID].members)
 };
 
 config.createSession = function(GUILD_ID,USER_ID, ROLE_ID, GAME, CHANNEL_ID, MESSAGE_ID) {
