@@ -3,6 +3,7 @@ const config = module.exports = {
     data: require("../data/config.json")
 };
 
+// Saves the changes made to config.json
 config.save = function () {
     fs.writeFile("../data/config.json", JSON.stringify(config.data), err => {
         if (err) {
@@ -11,6 +12,7 @@ config.save = function () {
     });
 };
 
+// Adds a new user to a group
 config.addUser = function(GUILD_ID, ROLE_ID, USER_ID) {
     config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
     config.save();
@@ -21,6 +23,7 @@ config.addUser = function(GUILD_ID, ROLE_ID, USER_ID) {
     config.save();
 }; Needs to be re-worked */
 
+// Creates a new configuration (config.json) for the current guild
 config.createSession = function(GUILD_ID,USER_ID, ROLE_ID, GAME, CHANNEL_ID, MESSAGE_ID) {
     if (config.data[GUILD_ID] === undefined) {
         config.data[GUILD_ID] = {}
@@ -34,6 +37,7 @@ config.createSession = function(GUILD_ID,USER_ID, ROLE_ID, GAME, CHANNEL_ID, MES
     config.save();
 };
 
+// Adds a new game to the allowed games list along with the max group size
 config.addGame = function (GUILD_ID, GAME, LIMIT) {
     return new Promise((resolve, reject) => {
         try {
@@ -54,6 +58,7 @@ config.addGame = function (GUILD_ID, GAME, LIMIT) {
     });
 };
 
+// Removes a game from the allowed games list
 config.removeGame = function (GUILD_ID, GAME) {
     return new Promise((resolve, reject) => {
         try{
@@ -72,6 +77,7 @@ config.removeGame = function (GUILD_ID, GAME) {
     })
 };
 
+// Promises a specified game on the list
 config.getGame = function (GUILD_ID, GAME) {
     return new Promise((resolve, reject) => {
         try {
@@ -91,6 +97,11 @@ config.getGame = function (GUILD_ID, GAME) {
             resolve(false)
         }
     })
+};
+
+// Returns a list of games and max players
+config.getGames = function (GUILD_ID) {
+    return config.data[GUILD_ID].games;
 };
 
 config.getRoleByReaction = function (REACTION, GUILD_ID) { //https://stackoverflow.com/a/9907509
