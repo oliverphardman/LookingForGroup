@@ -12,20 +12,27 @@ config.save = function () {
 };
 
 config.addUser = function(GUILD_ID, ROLE_ID, USER_ID) {
-    config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
-    config.save();
+    if(config.data[GUILD_ID][ROLE_ID].members.includes(USER_ID) == false){
+      config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
+      config.save()
+    }
+    console.log(config.data[GUILD_ID][ROLE_ID].members)
 };
 
-/*config.removeUser = function (guild, user) {
-    delete guild.users[user.id];
-    config.save();
-}; Needs to be re-worked */
+config.removeUser = function(GUILD_ID, ROLE_ID, USER_ID) {
+  if(USER_ID != config.data[GUILD_ID][ROLE_ID].creator){
+    delete config.data[GUILD_ID][ROLE_ID].members.splice(config.data[GUILD_ID][ROLE_ID].members.indexOf(USER_ID), 1)
+    config.save()
+  }
+  console.log(config.data[GUILD_ID][ROLE_ID].members)
+};
 
 config.createSession = function(GUILD_ID,USER_ID, ROLE_ID, GAME, CHANNEL_ID, MESSAGE_ID) {
     if (config.data[GUILD_ID] === undefined) {
         config.data[GUILD_ID] = {}
     }
     config.data[GUILD_ID][ROLE_ID] = {
+        creator: USER_ID,
         game: GAME,
         channel: CHANNEL_ID,
         members: [],
