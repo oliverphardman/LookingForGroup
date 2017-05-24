@@ -144,6 +144,14 @@ bot.on('messageReactionAdd', (reaction, user) => {
     }
 });
 
+bot.on('messageReactionRemove', (reaction, user) => {
+    if(reaction.emoji.name=="➕" && user.id!=bot.user.id) {
+        config.removeUser(reaction.message.guild.id, config.getRoleByReaction(reaction, reaction.message.guild.id), user.id)
+        reaction.message.guild.member(user).removeRole(config.getRoleByReaction(reaction, reaction.message.guild.id))
+    }
+});
+
+
 process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
 });
