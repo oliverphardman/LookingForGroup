@@ -18,29 +18,43 @@ function addGame(MESSAGE) {
     }
     config.addGame(MESSAGE.guild.id, GAME, LIMIT)
     .then(RESULT => {
-        MESSAGE.reply(`Success.\n Added ${GAME} (max. ${LIMIT} players) to the verified games list.`)
+        MESSAGE.reply(`Success.\n Added **${GAME}** (max. **${LIMIT} players**) to the verified games list.`)
     }).catch(err => {
-        MESSAGE.reply(`Error.\n ${GAME} could not be added.`);
+        MESSAGE.reply(`Error.\n **${GAME}** could not be added.`);
     });
 };
+
 //Removes a game from the verified list !lfgremove
 function removeGame(MESSAGE){
     var PARAMS = MESSAGE.content.split(" ").slice(1);
     var GAME = PARAMS[0];
     config.removeGame(MESSAGE.guild.id, GAME)
     .then(RESULT => {
-        MESSAGE.reply(`Success.\n ${GAME} has been removed from the verified list.`)
+        MESSAGE.reply(`Success.\n **${GAME}** has been removed from the verified list.`)
     }).catch(err => {
-        MESSAGE.reply(`Error.\n ${GAME} is not in the verified list.`)
+        MESSAGE.reply(`Error.\n **${GAME}** is not in the verified list.`)
     });
 };
+
 //Help command !lfg help
 function help(MESSAGE) {
-    message.channel.send(`Here are my available commands:
+    MESSAGE.channel.send(`Here are my available commands:
     \`!lfg PARAMS\`  - Creates a new guild
     \`!lfg kill\`  - Kills me
     \`!lfg help\`  - Shows this dialog (help)`);
 };
+
+//Show all defined games !lfg games
+function showGames(MESSAGE) {
+    var allGames = "Here are all the available games: ";
+    var gamesArray = config.getGames(MESSAGE.guild.id);
+    gamesArray.forEach((val, index) => {
+        allGames += "**" + val[0] + "** (max. " + val[1] + ")";
+        if (index < (gamesArray.length - 1)) { allGames += ", "}
+    });
+    MESSAGE.channel.send(allGames);
+};
+
 //Assigns a user into a session !lfg <GAME>
 function addLFG(MESSAGE) {
     var AUTHOR = MESSAGE.author,
@@ -78,7 +92,7 @@ function addLFG(MESSAGE) {
                             CHANNEL.overwritePermissions(ROLE, {
                                 "SEND_MESSAGES": true
                             })
-                            MESSAGE.reply(`Success.\nGame created in <#${CHANNEL.id}>. Click the + reaction below to join.`)
+                            MESSAGE.reply(`Success.\nGame created in **<#${CHANNEL.id}>**. Click the + reaction below to join.`)
 
                             .then(m => {
                                 m.react("➕")
@@ -99,7 +113,7 @@ function addLFG(MESSAGE) {
                 config.addUser(GUILD_ID, FOUND, AUTHOR.id)
                 MESSAGE.member.addRole(FOUND)
                 config.getChannelID(GUILD_ID,FOUND).then(CHN => {
-                    MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}>! :D`)
+                    MESSAGE.reply(`Success.\nYou have been added to a session in **<#${CHN}>**! :D`)
                 })
             };
         });
@@ -128,6 +142,8 @@ bot.on('message', message => {
         process.exit(0);
     } else if (message.content === '!lfg help') { // Help command (sends a description about the bot)
         help(message);
+    } else if (message.content === '!lfg games') { // Show all games
+        showGames(message);
     } else if (message.content.split(" ")[0] === '!lfg') { // Creates a new guild
         addLFG(message);
     } else if (message.content.split(" ")[0] === '!lfgadd') { // Hopefully the parameters will be sorted out with the new framework
