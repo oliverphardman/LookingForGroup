@@ -19,6 +19,7 @@ function addGame(MESSAGE) {
     config.addGame(MESSAGE.guild.id, GAME, LIMIT)
     .then(RESULT => {
         MESSAGE.reply(`Success.\n Added ${GAME} (max. ${LIMIT} players) to the verified games list.`)
+        console.log(RESULT)
     }).catch(err => {
         MESSAGE.reply(`Error.\n ${GAME} could not be added.`);
     });
@@ -97,10 +98,22 @@ function addLFG(MESSAGE) {
             //Adds user to existing session
             else {
                 config.addUser(GUILD_ID, FOUND, AUTHOR.id)
-                MESSAGE.member.addRole(FOUND)
-                config.getChannelID(GUILD_ID,FOUND).then(CHN => {
-                    MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}>! :D`)
+                .then(() =>{
+                  config.getChannelID(GUILD_ID,FOUND).then(CHN => {
+                      MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}>! :D`)
+                  })
+                  MESSAGE.member.addRole(FOUND)
                 })
+                .catch((err, game) =>{
+                  if(err == 'full'){
+                    console.log(game)
+                    config.getChannelID(GUILD_ID,FOUND).then(CHN => {
+                        MESSAGE.reply(`Sorry, group is full.`)
+                        //shit broke yo
+                    })
+                  }
+                })
+
             };
         });
     });
@@ -143,6 +156,13 @@ bot.on('messageReactionAdd', (reaction, user) => {
         reaction.message.guild.member(user).addRole(config.getRoleByReaction(reaction, reaction.message.guild.id))
     }
 });
+
+bot.on('messageReactionRemove', (reaction, user) => {
+    if(reaction.emoji.name=="➕" && user.id!=bot.user.id) {
+        config.removeUser(reaction.message.guild.id, config.getRoleByReaction(reaction, reaction.message.guild.id), user.id)
+    }
+});
+
 
 process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
