@@ -176,5 +176,4 @@ process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
 });
 
-// bot.login(process.env.TOKEN);
-bot.login('MzE2MjY0OTQyODE2NzIyOTQ0.DAXXaA.xv7nIdP_faBFx3k-th2UthLGfOg')
+bot.login(process.env.TOKEN);
