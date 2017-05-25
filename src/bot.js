@@ -78,7 +78,7 @@ function addLFG(MESSAGE) {
                 })
                 .then(ROLE => {
                     ROLE.edit({
-                        name: 'lfg_' + GAME
+                        name: 'lfg_' + GAME.toLowerCase()
                     });
                     //Adds role to the user
                     MESSAGE.member.addRole(ROLE).then(() => {
@@ -95,6 +95,10 @@ function addLFG(MESSAGE) {
                             MESSAGE.reply(`Success.\nGame created in **<#${CHANNEL.id}>**. Click the + reaction below to join.`)
 
                             .then(m => {
+                                // Creates a new voice channel
+                                MESSAGE.channel.guild.createChannel('lfg_' + GAME.toLowerCase(), 'voice')
+                                .then(CHANNEl => console.log(`Created new channel ${CHANNEL}`))
+                                .catch(console.error);
                                 m.react("➕")
                                 config.createSession(GUILD_ID, AUTHOR.id, ROLE.id, GAME,CHANNEL.id, m.id) // Testing params for now
                                 config.addUser(GUILD_ID, ROLE.id, AUTHOR.id)
@@ -172,4 +176,5 @@ process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
 });
 
-bot.login(process.env.TOKEN);
+// bot.login(process.env.TOKEN);
+bot.login('MzE2MjY0OTQyODE2NzIyOTQ0.DAXXaA.xv7nIdP_faBFx3k-th2UthLGfOg')
