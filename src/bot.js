@@ -94,27 +94,59 @@ function addLFG(MESSAGE) {
                             });
 
                             var guild = bot.guilds.get(GUILD_ID);
+                            var channels = guild.channels.array();
 
-                            for(guild_key in guild.channels){
-                                channel = guild.channels[guild_key];
+                            for(var i = 0; i < channels.length; i++){
+                                var channel = channels[i];
 
                                 if(channel.type === 'voice'){
-                                    channel.clone('lfg_' + GAME, true)
-                                        .then(CHANNEL => {
-                                            CHANNEL.overwritePermissions(GUILD_ID, {
-                                                'SEND_MESSAGES': false
-                                            });
+                                    var games = config.getGames(GUILD_ID);
+                                    var maxPlayers = 0;
 
-                                            CHANNEL.overwritePermissions(ROLE, {
-                                                'SEND_MESSAGES': true
-                                            });
+                                    for(var x = 0; x < games.length; x++){
+                                        var game = games[x];
+
+                                        if(game[0] === GAME){
+                                            maxPlayers = game[1];
+                                        }
+                                    }
+
+                                    guild.createChannel('lfg_' + GAME, 'voice')
+                                        .then(VOICE_CHANNEL => {
+                                            VOICE_CHANNEL.setUserLimit(maxPlayers)
+                                                .then(VOICE_CHANNEL => {
+                                                    console.log("Set user limit to " + maxPlayers + " for voice channel " + VOICE_CHANNEL.name);
+                                                    VOICE_CHANNEL.overwritePermissions(GUILD_ID, {
+                                                        'SEND_MESSAGES': false
+                                                    });
+
+                                                    VOICE_CHANNEL.overwritePermissions(ROLE, {
+                                                        'SEND_MESSAGES': true
+                                                    });
+                                                });
                                         }).catch(errr => {
                                             console.error(errr);
                                         });
 
+                                    // channel.clone('lfg_' + GAME, true)
+                                    //     .then(CHANNEL => {
+                                    //         CHANNEL.overwritePermissions(GUILD_ID, {
+                                    //             'SEND_MESSAGES': false
+                                    //         });
+                                    //
+                                    //         CHANNEL.overwritePermissions(ROLE, {
+                                    //             'SEND_MESSAGES': true
+                                    //         });
+                                    //
+                                    //     }).catch(errr => {
+                                    //         console.error(errr);
+                                    //     });
+
+
                                     break;
                                 }
                             }
+
 
 
                             MESSAGE.reply(`Success.\nGame created in **<#${CHANNEL.id}>**. Click the + reaction below to join.`)
