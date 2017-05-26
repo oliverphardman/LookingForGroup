@@ -101,6 +101,9 @@ function addLFG(MESSAGE) {
                                 .then(data =>{
                                   if(data == 'full'){
                                     MESSAGE.channel.sendMessage("**" + GAME + "** is now full!")
+                                  }else{
+                                    MESSAGE.channel.send(config.data[GUILD_ID][ROLE.id].members.length + '/' + data[1] + ' members has joined **' + GAME + '**')
+                                    console.log(data)
                                   }
                                 })
                             });
@@ -117,15 +120,13 @@ function addLFG(MESSAGE) {
             else {
                 config.addUser(GUILD_ID, FOUND, AUTHOR.id)
                   .then((data) =>{
-                    if(data == 'full'){
-                      //group is full. do something
-                    }
+                    console.log(data)
                     config.getChannelID(GUILD_ID,FOUND)
                       .then(CHN => {
                         MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}>! :D`)
-                        MESSAGE.channel.send("")
+                        MESSAGE.channel.send(config.data[GUILD_ID][FOUND].members.length + '/' + data[1] + ' members has joined **' + GAME + '**')
+                        MESSAGE.member.addRole(FOUND)
                       })
-                  MESSAGE.member.addRole(FOUND)
                 })
                 .catch((err, game) =>{
                   if(err == 'full'){
