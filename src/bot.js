@@ -144,9 +144,9 @@ function addLFG(MESSAGE) {
                                                 config.addUser(GUILD_ID, ROLE.id, AUTHOR.id)
                                                     .then(data => {
                                                         if (data == 'full') {
-                                                            MESSAGE.channel.sendMessage("**" + GAME + "** is now full!")
+                                                            MESSAGE.channel.sendMessage('**' + GAME + '** is now full!');
                                                         }
-                                                    })
+                                                    });
                                             });
                                     }).catch(errr => {
                                         console.error(errr);
@@ -156,7 +156,7 @@ function addLFG(MESSAGE) {
 
                             });
                         }).catch(err => {
-                            console.error(err)
+                            console.error(err);
                         });
                 }
                 //End of session creation
@@ -165,23 +165,42 @@ function addLFG(MESSAGE) {
                     config.addUser(GUILD_ID, FOUND, AUTHOR.id)
                         .then(() => {
                             config.getChannelID(GUILD_ID, FOUND).then(CHN => {
-                                MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}>! :D`)
-                            })
-                            MESSAGE.member.addRole(FOUND)
+                                MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}>! :D`);
+                            });
+                            MESSAGE.member.addRole(FOUND);
                         })
                         .catch((err, game) => {
                             if (err == 'full') {
-                                console.log(game)
+                                console.log(game);
                                 config.getChannelID(GUILD_ID, FOUND).then(CHN => {
-                                    MESSAGE.reply(`Sorry, group is full.`)
+                                    MESSAGE.reply('Sorry, group is full.');
                                     //shit broke yo
-                                })
+                                });
                             }
-                        })
+                        });
 
-                };
+                }
             });
         });
+}
+
+function endSession(message){
+    var author = message.author,
+        guild_id = message.guild.id,
+        role_id = "",
+        roles = message.member.roles.array();
+
+    for(var i = 0; i < roles.length; i++){
+        var role = roles[i];
+
+        if(role.name.startsWith('lfg_')){
+            role_id = role.id;
+        }
+    }
+
+    if(guild_id != null && (role_id != null || role_id != "")){
+        config.removeSession(guild_id, role_id);
+    }
 }
 
 //Removes a user from a session
@@ -214,18 +233,20 @@ bot.on('message', message => {
         addGame(message);
     } else if (message.content.split(' ')[0] === '!lfgremove') { // Remove a game from the current list
         removeGame(message);
+    } else if(message.content.split(' ')[0] === '!lfgend'){
+        endSession(message);
     }
 });
 
 bot.on('messageReactionAdd', (reaction, user) => {
-    if(reaction.emoji.name=="➕" && user.id!=bot.user.id) {
+    if(reaction.emoji.name=='➕' && user.id!=bot.user.id) {
         config.addUser(reaction.message.guild.id, config.getRoleByReaction(reaction, reaction.message.guild.id), user.id)
           .then(data =>{
-            if(data == 'full'){
-              MESSAGE.channel.sendMessage("**" + GAME + "** is now full!")
-            }
-          })
-        reaction.message.guild.member(user).addRole(config.getRoleByReaction(reaction, reaction.message.guild.id)) //TODO
+              if(data == 'full'){
+                  MESSAGE.channel.sendMessage('**' + GAME + '** is now full!');
+              }
+          });
+        reaction.message.guild.member(user).addRole(config.getRoleByReaction(reaction, reaction.message.guild.id)); //TODO
     }
 });
 

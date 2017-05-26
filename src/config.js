@@ -1,6 +1,8 @@
 const fs = require('fs');
-if (!fs.existsSync('../data/config.json'))
-    fs.writeFileSync('../data/config.json', '{}');
+// if (!fs.existsSync('../data/config.json'))
+//     if(!fs.existsSync('../data'))
+//         fs.mkdirSync('../data');
+//     fs.writeFileSync('../data/config.json', '{}');
 const config = module.exports = {
     data: require('../data/config.json')
 };
@@ -22,25 +24,25 @@ config.addUser = function (GUILD_ID, ROLE_ID, USER_ID) {
                 if (config.data[GUILD_ID][ROLE_ID].game == config.data[GUILD_ID].games[i][0]) {
                     if (config.data[GUILD_ID][ROLE_ID].members.length < config.data[GUILD_ID].games[i][1]) {
                         if (config.data[GUILD_ID][ROLE_ID].members.includes(USER_ID) == false) { //Makes sure there will be no duplicate entries in the player list
-                            config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
-                            config.save()
+                            config.data[GUILD_ID][ROLE_ID].members.push(USER_ID);
+                            config.save();
                             if (config.data[GUILD_ID][ROLE_ID].members.length == config.data[GUILD_ID].games[i][1]) {
-                                resolve('full')
+                                resolve('full');
                             } else {
-                                resolve(true)
+                                resolve(true);
                             }
                         }
                     } else {
                         //GROUP IS FULL. DO WHATEVER
-                        console.log('Group full')
-                        reject('full')
+                        console.log('Group full');
+                        reject('full');
                     }
                 }
             }
         } catch (err) {
-            reject(err)
+            reject(err);
         }
-    })
+    });
 };
 
 config.removeUser = function (GUILD_ID, ROLE_ID, USER_ID) {
@@ -62,6 +64,10 @@ config.createSession = function (GUILD_ID, USER_ID, ROLE_ID, GAME, CHANNEL_ID, M
         messageid: MESSAGE_ID
     };
     config.save();
+};
+
+config.removeSession = function(GUILD_ID, ROLE_ID){
+    config.data[GUILD_ID][ROLE_ID] = '';
 };
 
 // Adds a new game to the allowed games list along with the max group size
