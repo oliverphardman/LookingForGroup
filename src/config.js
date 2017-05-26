@@ -12,14 +12,33 @@ config.save = function () {
     });
 };
 
-// Adds a new user to a group
-config.addUser = function (GUILD_ID, ROLE_ID, USER_ID) {
-    initIfNeeded(GUILD_ID);
-    if (config.data[GUILD_ID][ROLE_ID].members.includes(USER_ID) == false) {
-        config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
-        config.save()
+config.addUser = function(GUILD_ID, ROLE_ID, USER_ID) {
+  return new Promise((resolve, reject) =>{
+    try{
+      initIfNeeded(GUILD_ID);
+      for(let i = 0; i < config.data[GUILD_ID].games.length; i++){
+        if(config.data[GUILD_ID][ROLE_ID].game == config.data[GUILD_ID].games[i][0]){
+          if(config.data[GUILD_ID][ROLE_ID].members.length < config.data[GUILD_ID].games[i][1]){
+            if(config.data[GUILD_ID][ROLE_ID].members.includes(USER_ID) == false){ //Makes sure there will be no duplicate entries in the player list
+              config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
+              config.save()
+              resolve(true)
+            }
+          }else if(config.data[GUILD_ID][ROLE_ID].members.length == config.data[GUILD_ID].games[i][1]){
+            //MAYBE PROACTIVELY SEND A MESSAGE TO THE GUILD IF THE GROUP IS FULL?
+          }else{
+            //GROUP IS FULL. DO WHATEVER
+            console.log('Group full')
+            reject('full')
+          }
+        }
+      }
+    }catch(err){
+
     }
-    //console.log(config.data[GUILD_ID][ROLE_ID].members)
+  })
+
+
 };
 
 config.removeUser = function (GUILD_ID, ROLE_ID, USER_ID) {
@@ -28,7 +47,6 @@ config.removeUser = function (GUILD_ID, ROLE_ID, USER_ID) {
         delete config.data[GUILD_ID][ROLE_ID].members.splice(config.data[GUILD_ID][ROLE_ID].members.indexOf(USER_ID), 1)
         config.save()
     }
-    //console.log(config.data[GUILD_ID][ROLE_ID].members)
 };
 
 // Creates a new configuration (config.json) for the current guild

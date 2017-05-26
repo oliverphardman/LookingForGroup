@@ -115,10 +115,22 @@ function addLFG(MESSAGE) {
             //Adds user to existing session
             else {
                 config.addUser(GUILD_ID, FOUND, AUTHOR.id)
-                MESSAGE.member.addRole(FOUND)
-                config.getChannelID(GUILD_ID,FOUND).then(CHN => {
-                    MESSAGE.reply(`Success.\nYou have been added to a session in **<#${CHN}>**! :D`)
+                .then(() =>{
+                  config.getChannelID(GUILD_ID,FOUND).then(CHN => {
+                      MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}>! :D`)
+                  })
+                  MESSAGE.member.addRole(FOUND)
                 })
+                .catch((err, game) =>{
+                  if(err == 'full'){
+                    console.log(game)
+                    config.getChannelID(GUILD_ID,FOUND).then(CHN => {
+                        MESSAGE.reply(`Sorry, group is full.`)
+                        //shit broke yo
+                    })
+                  }
+                })
+
             };
         });
     });
