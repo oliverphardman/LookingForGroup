@@ -1,13 +1,16 @@
 const fs = require('fs');
-if (!fs.existsSync('data/config.json'))
-    fs.writeFileSync('data/config.json', '{}');
+if (!fs.existsSync('../data/config.json')) {
+    if (!fs.existsSync('../data'))
+        fs.mkdirSync('../data');
+    fs.writeFileSync('../data/config.json', '{}');
+}
 const config = module.exports = {
     data: require('../data/config.json')
 };
 
 // Saves the changes made to config.json
 config.save = function () {
-    fs.writeFile('data/config.json', JSON.stringify(config.data), err => {
+    fs.writeFile('../data/config.json', JSON.stringify(config.data), err => {
         if (err) {
             throw err;
         }
