@@ -115,7 +115,6 @@ function addLFG(MESSAGE) {
                                         .then(VOICE_CHANNEL => {
                                             VOICE_CHANNEL.setUserLimit(maxPlayers)
                                                 .then(VOICE_CHANNEL => {
-                                                    console.log("Set user limit to " + maxPlayers + " for voice channel " + VOICE_CHANNEL.name);
                                                     VOICE_CHANNEL.overwritePermissions(GUILD_ID, {
                                                         'SEND_MESSAGES': false
                                                     });
