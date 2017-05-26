@@ -1,4 +1,6 @@
 const fs = require('fs');
+if (!fs.existsSync('../data/config.json'))
+    fs.writeFileSync('../data/config.json', '{}');
 const config = module.exports = {
     data: require('../data/config.json')
 };

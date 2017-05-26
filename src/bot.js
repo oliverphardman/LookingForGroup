@@ -12,28 +12,32 @@ function addGame(MESSAGE) {
         return;
     }
     var LIMIT = PARAMS[0]; // Player limit
+    if (LIMIT >= 99) {
+        MESSAGE.reply('Sorry, due to Discord limitations max players need to be less than 99.');
+        return;
+    }
     var GAME = '';         // Game name
     for (var i = 1; i < PARAMS.length; i++) {
         GAME += PARAMS[i];
     }
     config.addGame(MESSAGE.guild.id, GAME, LIMIT)
-    .then(RESULT => {
-        MESSAGE.reply(`Success.\n Added **${GAME}** (max. **${LIMIT} players**) to the verified games list.`);
-    }).catch(err => {
-        MESSAGE.reply(`Error.\n **${GAME}** could not be added.`);
-    });
+        .then(RESULT => {
+            MESSAGE.reply(`Success.\n Added **${GAME}** (max. **${LIMIT} players**) to the verified games list.`);
+        }).catch(err => {
+            MESSAGE.reply(`Error.\n **${GAME}** could not be added.`);
+        });
 }
 
 //Removes a game from the verified list !lfgremove
-function removeGame(MESSAGE){
+function removeGame(MESSAGE) {
     var PARAMS = MESSAGE.content.split(' ').slice(1);
     var GAME = PARAMS[0];
     config.removeGame(MESSAGE.guild.id, GAME)
-    .then(RESULT => {
-        MESSAGE.reply(`Success.\n **${GAME}** has been removed from the verified list.`);
-    }).catch(err => {
-        MESSAGE.reply(`Error.\n **${GAME}** is not in the verified list.`);
-    });
+        .then(RESULT => {
+            MESSAGE.reply(`Success.\n **${GAME}** has been removed from the verified list.`);
+        }).catch(err => {
+            MESSAGE.reply(`Error.\n **${GAME}** is not in the verified list.`);
+        });
 }
 
 //Help command !lfg help
@@ -50,7 +54,7 @@ function showGames(MESSAGE) {
     var gamesArray = config.getGames(MESSAGE.guild.id);
     gamesArray.forEach((val, index) => {
         allGames += '**' + val[0] + '** (max. ' + val[1] + ')';
-        if (index < (gamesArray.length - 1)) { allGames += ', ';}
+        if (index < (gamesArray.length - 1)) { allGames += ', '; }
     });
     MESSAGE.channel.send(allGames);
 }
@@ -62,105 +66,105 @@ function addLFG(MESSAGE) {
         PARAMS = MESSAGE.content.split(' ').slice(1);
     GAME = PARAMS[0];
     config.getGame(GUILD_ID, GAME)
-    .then(RESULT => {
-        if (RESULT === false) {
-            //Game not found
-            return MESSAGE.reply(`Error.
+        .then(RESULT => {
+            if (RESULT === false) {
+                //Game not found
+                return MESSAGE.reply(`Error.
                 Invalid game specified (Please contact server Admin to add the game).
                 Alternatively, if you are an Admin use the !lfgadd command.`);
-        }
-        //Search if lobby exists before creating new session (modularisation FTW)
-        config.findSession(GUILD_ID, GAME).then(FOUND => {
-            if (FOUND === false) {
-                //Creates new session
-                MESSAGE.guild.createRole({
-                    name: 'TEMP'
-                })
-                .then(ROLE => {
-                    ROLE.edit({
-                        name: 'lfg_' + GAME.toLowerCase()
-                    });
-                    //Adds role to the user
-                    MESSAGE.member.addRole(ROLE).then(() => {
-                        //Clones the channel
-                        MESSAGE.channel.clone('lfg_' + GAME, true)
-                        .then(CHANNEL => {
-                            //Sets permissions
-                            CHANNEL.overwritePermissions(GUILD_ID, {
-                                'SEND_MESSAGES': false
+            }
+            //Search if lobby exists before creating new session (modularisation FTW)
+            config.findSession(GUILD_ID, GAME).then(FOUND => {
+                if (FOUND === false) {
+                    //Creates new session
+                    MESSAGE.guild.createRole({
+                        name: 'TEMP'
+                    })
+                        .then(ROLE => {
+                            ROLE.edit({
+                                name: 'lfg_' + GAME.toLowerCase()
                             });
-                            CHANNEL.overwritePermissions(ROLE, {
-                                'SEND_MESSAGES': true
-                            });
-
-                            var guild = bot.guilds.get(GUILD_ID);
-                            var channels = guild.channels.array();
-
-                            for(var i = 0; i < channels.length; i++){
-                                var channel = channels[i];
-
-                                if(channel.type === 'voice'){
-                                    var games = config.getGames(GUILD_ID);
-                                    var maxPlayers = 0;
-
-                                    for(var x = 0; x < games.length; x++){
-                                        var game = games[x];
-
-                                        if(game[0] === GAME){
-                                            maxPlayers = game[1];
-                                        }
-                                    }
-
-                                    guild.createChannel('lfg_' + GAME.toLowerCase(), 'voice')
-                                        .then(VOICE_CHANNEL => {
-                                            VOICE_CHANNEL.setUserLimit(maxPlayers)
-                                                .then(VOICE_CHANNEL => {
-                                                    VOICE_CHANNEL.overwritePermissions(GUILD_ID, {
-                                                        'SEND_MESSAGES': false
-                                                    });
-
-                                                    VOICE_CHANNEL.overwritePermissions(ROLE, {
-                                                        'SEND_MESSAGES': true
-                                                    });
-                                                });
-                                        }).catch(errr => {
-                                            console.error(errr);
+                            //Adds role to the user
+                            MESSAGE.member.addRole(ROLE).then(() => {
+                                //Clones the channel
+                                MESSAGE.channel.clone('lfg_' + GAME.toLowerCase(), true)
+                                    .then(CHANNEL => {
+                                        //Sets permissions
+                                        CHANNEL.overwritePermissions(GUILD_ID, {
+                                            'SEND_MESSAGES': false
                                         });
-                                    break;
-                                }
-                            }
+                                        CHANNEL.overwritePermissions(ROLE, {
+                                            'SEND_MESSAGES': true
+                                        });
+
+                                        var guild = bot.guilds.get(GUILD_ID);
+                                        var channels = guild.channels.array();
+
+                                        for (var i = 0; i < channels.length; i++) {
+                                            var channel = channels[i];
+
+                                            if (channel.type === 'voice') {
+                                                var games = config.getGames(GUILD_ID);
+                                                var maxPlayers = 0;
+
+                                                for (var x = 0; x < games.length; x++) {
+                                                    var game = games[x];
+
+                                                    if (game[0] === GAME) {
+                                                        maxPlayers = game[1];
+                                                    }
+                                                }
+
+                                                guild.createChannel('lfg_' + GAME.toLowerCase(), 'voice')
+                                                    .then(VOICE_CHANNEL => {
+                                                        VOICE_CHANNEL.setUserLimit(maxPlayers)
+                                                            .then(VOICE_CHANNEL => {
+                                                                VOICE_CHANNEL.overwritePermissions(GUILD_ID, {
+                                                                    'SEND_MESSAGES': false
+                                                                });
+
+                                                                VOICE_CHANNEL.overwritePermissions(ROLE, {
+                                                                    'SEND_MESSAGES': true
+                                                                });
+                                                            });
+                                                    }).catch(errr => {
+                                                        console.error(errr);
+                                                    });
+                                                break;
+                                            }
+                                        }
 
 
 
-                            MESSAGE.reply(`Success.\nGame created in **<#${CHANNEL.id}>**. Click the + reaction below to join.`)
+                                        MESSAGE.reply(`Success.\nGame created in **<#${CHANNEL.id}>**. Click the + reaction below to join. Click it again to leave.`)
 
-                            .then(m => {
-                                m.react('➕');
-                                config.createSession(GUILD_ID, AUTHOR.id, ROLE.id, GAME,CHANNEL.id, m.id); // Testing params for now
-                                config.addUser(GUILD_ID, ROLE.id, AUTHOR.id);
+                                            .then(m => {
+                                                m.react('➕');
+                                                config.createSession(GUILD_ID, AUTHOR.id, ROLE.id, GAME, CHANNEL.id, m.id); // Testing params for now
+                                                config.addUser(GUILD_ID, ROLE.id, AUTHOR.id);
+                                            });
+                                    }).catch(errr => {
+                                        console.error(errr);
+                                    });
+
+
+
                             });
-                        }).catch(errr => {
-                            console.error(errr);
+                        }).catch(err => {
+                            console.error(err);
                         });
-
-
-
+                }
+                //End of session creation
+                //Adds user to existing session
+                else {
+                    config.addUser(GUILD_ID, FOUND, AUTHOR.id);
+                    MESSAGE.member.addRole(FOUND);
+                    config.getChannelID(GUILD_ID, FOUND).then(CHN => {
+                        MESSAGE.reply(`Success.\nYou have been added to a session in **<#${CHN}>**! :D`);
                     });
-                }).catch(err =>{
-                    console.error(err);
-                });
-            }
-            //End of session creation
-            //Adds user to existing session
-            else {
-                config.addUser(GUILD_ID, FOUND, AUTHOR.id);
-                MESSAGE.member.addRole(FOUND);
-                config.getChannelID(GUILD_ID,FOUND).then(CHN => {
-                    MESSAGE.reply(`Success.\nYou have been added to a session in **<#${CHN}>**! :D`);
-                });
-            }
+                }
+            });
         });
-    });
 }
 
 //Removes a user from a session
@@ -197,14 +201,14 @@ bot.on('message', message => {
 });
 
 bot.on('messageReactionAdd', (reaction, user) => {
-    if(reaction.emoji.name=='➕' && user.id!=bot.user.id) {
+    if (reaction.emoji.name == '➕' && user.id != bot.user.id) {
         config.addUser(reaction.message.guild.id, config.getRoleByReaction(reaction, reaction.message.guild.id), user.id);
         reaction.message.guild.member(user).addRole(config.getRoleByReaction(reaction, reaction.message.guild.id));
     }
 });
 
 bot.on('messageReactionRemove', (reaction, user) => {
-    if(reaction.emoji.name=='➕' && user.id!=bot.user.id) {
+    if (reaction.emoji.name == '➕' && user.id != bot.user.id) {
         config.removeUser(reaction.message.guild.id, config.getRoleByReaction(reaction, reaction.message.guild.id), user.id);
         reaction.message.guild.member(user).removeRole(config.getRoleByReaction(reaction, reaction.message.guild.id));
     }
