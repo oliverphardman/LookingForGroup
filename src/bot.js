@@ -78,7 +78,7 @@ function addLFG(MESSAGE) {
                 })
                 .then(ROLE => {
                     ROLE.edit({
-                        name: 'lfg_' + GAME
+                        name: 'lfg_' + GAME.toLowerCase()
                     });
                     //Adds role to the user
                     MESSAGE.member.addRole(ROLE).then(() => {
@@ -111,7 +111,7 @@ function addLFG(MESSAGE) {
                                         }
                                     }
 
-                                    guild.createChannel('lfg_' + GAME, 'voice')
+                                    guild.createChannel('lfg_' + GAME.toLowerCase(), 'voice')
                                         .then(VOICE_CHANNEL => {
                                             VOICE_CHANNEL.setUserLimit(maxPlayers)
                                                 .then(VOICE_CHANNEL => {
@@ -126,22 +126,6 @@ function addLFG(MESSAGE) {
                                         }).catch(errr => {
                                             console.error(errr);
                                         });
-
-                                    // channel.clone('lfg_' + GAME, true)
-                                    //     .then(CHANNEL => {
-                                    //         CHANNEL.overwritePermissions(GUILD_ID, {
-                                    //             'SEND_MESSAGES': false
-                                    //         });
-                                    //
-                                    //         CHANNEL.overwritePermissions(ROLE, {
-                                    //             'SEND_MESSAGES': true
-                                    //         });
-                                    //
-                                    //     }).catch(errr => {
-                                    //         console.error(errr);
-                                    //     });
-
-
                                     break;
                                 }
                             }
