@@ -98,6 +98,11 @@ function addLFG(MESSAGE) {
                                 m.react("➕")
                                 config.createSession(GUILD_ID, AUTHOR.id, ROLE.id, GAME,CHANNEL.id, m.id) // Testing params for now
                                 config.addUser(GUILD_ID, ROLE.id, AUTHOR.id)
+                                .then(data =>{
+                                  if(data == 'full'){
+                                    MESSAGE.channel.sendMessage("**" + GAME + "** is now full!")
+                                  }
+                                })
                             });
                         }).catch(errr => {
                             console.error(errr)
@@ -168,6 +173,11 @@ bot.on('message', message => {
 bot.on('messageReactionAdd', (reaction, user) => {
     if(reaction.emoji.name=="➕" && user.id!=bot.user.id) {
         config.addUser(reaction.message.guild.id, config.getRoleByReaction(reaction, reaction.message.guild.id), user.id)
+          .then(data =>{
+            if(data == 'full'){
+              MESSAGE.channel.sendMessage("**" + GAME + "** is now full!")
+            }
+          })
         reaction.message.guild.member(user).addRole(config.getRoleByReaction(reaction, reaction.message.guild.id))
     }
 });

@@ -22,10 +22,12 @@ config.addUser = function(GUILD_ID, ROLE_ID, USER_ID) {
             if(config.data[GUILD_ID][ROLE_ID].members.includes(USER_ID) == false){ //Makes sure there will be no duplicate entries in the player list
               config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
               config.save()
-              resolve(true)
+              if(config.data[GUILD_ID][ROLE_ID].members.length == config.data[GUILD_ID].games[i][1]){
+                resolve('full')
+              }else{
+                resolve(true)
+              }
             }
-          }else if(config.data[GUILD_ID][ROLE_ID].members.length == config.data[GUILD_ID].games[i][1]){
-            //MAYBE PROACTIVELY SEND A MESSAGE TO THE GUILD IF THE GROUP IS FULL?
           }else{
             //GROUP IS FULL. DO WHATEVER
             console.log('Group full')
@@ -34,11 +36,9 @@ config.addUser = function(GUILD_ID, ROLE_ID, USER_ID) {
         }
       }
     }catch(err){
-
+      reject(err)
     }
   })
-
-
 };
 
 config.removeUser = function (GUILD_ID, ROLE_ID, USER_ID) {
