@@ -24,7 +24,7 @@ config.addUser = function(GUILD_ID, ROLE_ID, USER_ID) {
               config.save()
 
               if(config.data[GUILD_ID][ROLE_ID].members.length == config.data[GUILD_ID].games[i][1]){
-                config.data[GUILD_ID].games[i].full = 'true'
+                config.data[GUILD_ID].games[i].full = true
                 resolve(config.data[GUILD_ID].games[i])
               }else{
                 var result = config.data[GUILD_ID].games[i]

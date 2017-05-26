@@ -124,7 +124,7 @@ function addLFG(MESSAGE) {
                     config.getChannelID(GUILD_ID,FOUND)
                       .then(CHN => {
                         MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}>! :D`)
-                        MESSAGE.channel.send(config.data[GUILD_ID][FOUND].members.length + '/' + data[1] + ' members has joined **' + GAME + '**')
+                        MESSAGE.channel.send(config.data[GUILD_ID][FOUND].members.length + '/' + data[1] + ' members have joined **' + GAME + '**')
                         MESSAGE.member.addRole(FOUND)
                       })
                 })
