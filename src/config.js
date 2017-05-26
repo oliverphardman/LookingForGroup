@@ -17,6 +17,7 @@ config.save = function () {
     });
 };
 
+// Adds a user a session
 config.addUser = function (GUILD_ID, ROLE_ID, USER_ID) {
     return new Promise((resolve, reject) => {
         try {
@@ -45,6 +46,7 @@ config.addUser = function (GUILD_ID, ROLE_ID, USER_ID) {
     })
 };
 
+// Removes a user from the session
 config.removeUser = function (GUILD_ID, ROLE_ID, USER_ID) {
     initIfNeeded(GUILD_ID);
     if (USER_ID != config.data[GUILD_ID][ROLE_ID].creator) {
