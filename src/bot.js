@@ -6,7 +6,7 @@ require('dotenv').config();
 //Adds a game to the verified list !lfgadd
 function addGame(MESSAGE) {
     var PARAMS = MESSAGE.content.split(' ').slice(1);
-    console.log(PARAMS.length);
+    (PARAMS.length);
     if (PARAMS.length <= 1) {
         MESSAGE.reply('Sorry that didn\'t work. Did you type the command like this: `!lfgadd <MAX PLAYERS> <GAME>`');
         return;
@@ -120,13 +120,14 @@ function addLFG(MESSAGE) {
                                                     .then(m => {
                                                         m.react("➕")
                                                         config.createSession(GUILD_ID, AUTHOR.id, ROLE.id, GAME, CHANNEL.id, m.id) // Testing params for now
+
                                                         config.addUser(GUILD_ID, ROLE.id, AUTHOR.id)
                                                             .then(data => {
                                                                 if (data == 'full') {
                                                                     MESSAGE.channel.sendMessage("**" + GAME + "** is now full!")
                                                                 } else {
                                                                     MESSAGE.channel.send(config.data[GUILD_ID][ROLE.id].members.length + '/' + data[1] + ' members has joined **' + GAME + '**')
-                                                                    console.log(data)
+
                                                                 }
                                                             })
                                                     });
@@ -144,7 +145,6 @@ function addLFG(MESSAGE) {
                 else {
                     config.addUser(GUILD_ID, FOUND, AUTHOR.id)
                         .then((data) => {
-                            console.log(data)
                             config.getChannelID(GUILD_ID, FOUND)
                                 .then(CHN => {
                                     MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}>! :D`)
@@ -154,7 +154,7 @@ function addLFG(MESSAGE) {
                         })
                         .catch((err, game) => {
                             if (err == 'full') {
-                                console.log(game)
+                                (game)
                                 config.getChannelID(GUILD_ID, FOUND).then(CHN => {
                                     MESSAGE.reply(`Sorry, group is full.`)
                                     //shit broke yo
