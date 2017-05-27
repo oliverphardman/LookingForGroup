@@ -1,8 +1,9 @@
 const fs = require('fs');
-// if (!fs.existsSync('../data/config.json'))
-//     if(!fs.existsSync('../data'))
-//         fs.mkdirSync('../data');
-//     fs.writeFileSync('../data/config.json', '{}');
+if (!fs.existsSync('../data/config.json')) {
+    if (!fs.existsSync('../data'))
+        fs.mkdirSync('../data');
+    fs.writeFileSync('../data/config.json', '{}');
+}
 const config = module.exports = {
     data: require('../data/config.json')
 };
@@ -24,12 +25,15 @@ config.addUser = function (GUILD_ID, ROLE_ID, USER_ID) {
                 if (config.data[GUILD_ID][ROLE_ID].game == config.data[GUILD_ID].games[i][0]) {
                     if (config.data[GUILD_ID][ROLE_ID].members.length < config.data[GUILD_ID].games[i][1]) {
                         if (config.data[GUILD_ID][ROLE_ID].members.includes(USER_ID) == false) { //Makes sure there will be no duplicate entries in the player list
-                            config.data[GUILD_ID][ROLE_ID].members.push(USER_ID);
-                            config.save();
+                            config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
+                            config.save()
+
                             if (config.data[GUILD_ID][ROLE_ID].members.length == config.data[GUILD_ID].games[i][1]) {
-                                resolve('full');
+                                config.data[GUILD_ID].games[i].full = true
+                                resolve(config.data[GUILD_ID].games[i])
                             } else {
-                                resolve(true);
+                                var result = config.data[GUILD_ID].games[i]
+                                resolve(result)
                             }
                         }
                     } else {

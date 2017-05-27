@@ -8,3 +8,4 @@ yarn-error.log*
 node_modules
 .env
 data/config.json
+*.json
