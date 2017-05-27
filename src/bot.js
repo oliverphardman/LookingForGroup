@@ -154,7 +154,6 @@ function addLFG(MESSAGE) {
                         })
                         .catch((err, game) => {
                             if (err == 'full') {
-                                (game)
                                 config.getChannelID(GUILD_ID, FOUND).then(CHN => {
                                     MESSAGE.reply(`Sorry, group is full.`)
                                     //shit broke yo
