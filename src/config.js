@@ -25,15 +25,15 @@ config.addUser = function (GUILD_ID, ROLE_ID, USER_ID) {
                 if (config.data[GUILD_ID][ROLE_ID].game == config.data[GUILD_ID].games[i][0]) {
                     if (config.data[GUILD_ID][ROLE_ID].members.length < config.data[GUILD_ID].games[i][1]) {
                         if (config.data[GUILD_ID][ROLE_ID].members.includes(USER_ID) == false) { //Makes sure there will be no duplicate entries in the player list
-                            config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
-                            config.save()
+                            config.data[GUILD_ID][ROLE_ID].members.push(USER_ID);
+                            config.save();
 
                             if (config.data[GUILD_ID][ROLE_ID].members.length == config.data[GUILD_ID].games[i][1]) {
-                                config.data[GUILD_ID].games[i].full = true
-                                resolve(config.data[GUILD_ID].games[i])
+                                config.data[GUILD_ID].games[i].full = true;
+                                resolve(config.data[GUILD_ID].games[i]);
                             } else {
-                                var result = config.data[GUILD_ID].games[i]
-                                resolve(result)
+                                var result = config.data[GUILD_ID].games[i];
+                                resolve(result);
                             }
                         }
                     } else {
@@ -71,7 +71,8 @@ config.createSession = function (GUILD_ID, USER_ID, ROLE_ID, GAME, CHANNEL_ID, M
 };
 
 config.removeSession = function(GUILD_ID, ROLE_ID){
-    config.data[GUILD_ID][ROLE_ID] = '';
+    delete config.data[GUILD_ID][ROLE_ID];
+    config.save();
 };
 
 // Adds a new game to the allowed games list along with the max group size
