@@ -5,6 +5,11 @@ const bot = new Discord.Client();
 require('dotenv').config();
 //Adds a game to the verified list !lfgadd
 function addGame(MESSAGE) {
+    // Verify if the user is the guild owner
+    if (MESSAGE.channel.guild.ownerID !== MESSAGE.author.id) {
+        MESSAGE.reply('This is an administrative command, only the server owner can run it.');
+        return;
+    }
     var PARAMS = MESSAGE.content.split(' ').slice(1);
     (PARAMS.length);
     if (PARAMS.length <= 1) {
@@ -30,6 +35,11 @@ function addGame(MESSAGE) {
 
 //Removes a game from the verified list !lfgremove
 function removeGame(MESSAGE) {
+    // Verify if the user is the guild owner
+    if (MESSAGE.channel.guild.ownerID !== MESSAGE.author.id) {
+        MESSAGE.reply('This is an administrative command, only the server owner can run it.');
+        return;
+    }
     var PARAMS = MESSAGE.content.split(' ').slice(1);
     var GAME = PARAMS[0];
     config.removeGame(MESSAGE.guild.id, GAME)
