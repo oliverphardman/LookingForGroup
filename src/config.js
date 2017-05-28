@@ -17,6 +17,18 @@ config.save = function () {
     });
 };
 
+config.checkUser = function(USER_ID){
+  for(let i = 0; i <= Object.keys(config.data).length - 1; i++){
+    let obj =  Object.keys(config.data)[i]
+    let obj2 = Object.keys(config.data[obj])
+    if(config.data[obj][obj2[1]].members.includes(USER_ID)){
+      return false
+    }else{
+      return true
+    }
+  }
+}
+
 config.addUser = function (GUILD_ID, ROLE_ID, USER_ID) {
     return new Promise((resolve, reject) => {
         try {
