@@ -62,9 +62,10 @@ config.createSession = function (GUILD_ID, USER_ID, ROLE_ID, GAME, CHANNEL_ID, M
         creator: USER_ID,
         game: GAME,
         channel: CHANNEL_ID,
-        members: [],
+        members: [USER_ID],
         messageid: MESSAGE_ID
     };
+    config.data[GUILD_ID].sessions.push(ROLE_ID);
     config.save();
 };
 
@@ -76,7 +77,7 @@ config.addGame = function (GUILD_ID, GAME, LIMIT) {
             if (config.data[GUILD_ID].games.hasOwnProperty(GAME)) {
                 reject(false);
             }
-            config.data[GUILD_ID].games.push([GAME, LIMIT]);
+            config.data[GUILD_ID].games[GAME] = LIMIT;
             config.save();
             resolve(true);
         } catch (err) {
@@ -91,13 +92,7 @@ config.removeGame = function (GUILD_ID, GAME) {
     return new Promise((resolve, reject) => {
         try {
             initIfNeeded(GUILD_ID);
-            var newGameArray = config.data[GUILD_ID].games.filter(function (val) { // Clone the Games array wothout the selected game
-                if (val[0] === GAME) {
-                    return false;
-                }
-                return true;
-            });
-            config.data[GUILD_ID].games = newGameArray; // Update the existing games array
+            delete config.data[GUILD_ID].games[GAME]; // Delete the game from the object
             config.save();
             resolve(true);
         } catch (err) {
@@ -111,16 +106,10 @@ config.getGame = function (GUILD_ID, GAME) {
     return new Promise((resolve, reject) => {
         try {
             initIfNeeded(GUILD_ID);
-            var gameFound = false; // Was the game found?
-            config.data[GUILD_ID].games.filter(function (val) { // Search for the game
-                if (val[0] === GAME) {
-                    gameFound = true;
-                }
-            });
-            if (config.data[GUILD_ID] === undefined || !gameFound) {
-                resolve(false);
+            if (config.data[GUILD_ID] === undefined || !config.data[GUILD_ID].games[GAME]) {
+                resolve(false); // Game not found
             } else {
-                resolve(true);
+                resolve(config.data[GUILD_ID].games[GAME]); // Game found
             }
         } catch (err) {
             console.error(err);
@@ -133,6 +122,22 @@ config.getGame = function (GUILD_ID, GAME) {
 config.getGames = function (GUILD_ID) {
     initIfNeeded(GUILD_ID);
     return config.data[GUILD_ID].games;
+};
+
+// Returns a list of sessions
+config.getSessions = function (GUILD_ID) {
+    initIfNeeded(GUILD_ID);
+    var sessions = config.data[GUILD_ID].sessions;
+    sessions = sessions.map(val => {
+        const game = config.data[GUILD_ID][val].game; // Gets the session's game
+        const sessionArr = [
+            game,
+            config.data[GUILD_ID][val].members.length,
+            config.data[GUILD_ID].games[game]
+        ];
+        return sessionArr;
+    });
+    return sessions;
 };
 
 config.getRoleByReaction = function (REACTION, GUILD_ID) { //https://stackoverflow.com/a/9907509
@@ -172,7 +177,8 @@ config.getChannelID = function (GUILD_ID, SESSION) {
 function initIfNeeded(GUILD_ID) {
     if (config.data[GUILD_ID] === undefined || config.data[GUILD_ID].games === undefined) {
         config.data[GUILD_ID] = {
-            games: []
+            games: {},
+            sessions: []
         };
     }
 }

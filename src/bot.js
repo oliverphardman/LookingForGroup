@@ -61,12 +61,24 @@ function help(MESSAGE) {
 //Show all defined games !lfg games
 function showGames(MESSAGE) {
     var allGames = 'Here are all the available games: ';
-    var gamesArray = config.getGames(MESSAGE.guild.id);
-    gamesArray.forEach((val, index) => {
-        allGames += '**' + val[0] + '** (max. ' + val[1] + ')';
-        if (index < (gamesArray.length - 1)) { allGames += ', '; }
+    const gamesObject = config.getGames(MESSAGE.guild.id);
+    const gamesObjectKeys = Object.keys(gamesObject);
+    gamesObjectKeys.forEach((key, index) => {
+        allGames += '**' + key + '** (max. ' + gamesObject[key] + ')';
+        if (index < (gamesObjectKeys.length - 1)) { allGames += ', '; }
     });
     MESSAGE.channel.send(allGames);
+}
+
+//Show all sessions !lfg sessions
+function showSessions(MESSAGE) {
+    var allSessions = 'Here are all the available sessions: ';
+    var sessionsArray = config.getSessions(MESSAGE.guild.id);
+    sessionsArray.forEach((val, index) => {
+        allSessions += '**' + val[0] + '** (' + val[1] + '/' + val[2] + ')';
+        if (index < (sessionsArray.length - 1)) { allSessions += ', '; }
+    });
+    MESSAGE.channel.send(allSessions);
 }
 
 //Assigns a user into a session !lfg <GAME>
@@ -106,15 +118,8 @@ function addLFG(MESSAGE) {
                                         CHANNEL.overwritePermissions(ROLE, {
                                             "SEND_MESSAGES": true
                                         })
-                                        var games = config.getGames(GUILD_ID);
-                                        var maxPlayers = 0;
-                                        for (var x = 0; x < games.length; x++) {
-                                            var game = games[x];
-                                            if (game[0] === GAME) {
-                                                maxPlayers = game[1];
-                                                break;
-                                            }
-                                        }
+                                        const games = config.getGames(GUILD_ID);
+                                        const maxPlayers = games[GAME];
                                         MESSAGE.guild.createChannel('lfg_' + GAME.toLowerCase(), 'voice')
                                             .then(VOICE_CHANNEL => {
                                                 VOICE_CHANNEL.setUserLimit(maxPlayers)
@@ -199,6 +204,8 @@ bot.on('message', message => {
         help(message);
     } else if (message.content === '!lfg games') { // Show all games
         showGames(message);
+    } else if (message.content === '!lfg sessions') { // Show all sessions
+        showSessions(message);
     } else if (message.content.split(' ')[0] === '!lfg') { // Creates a new guild
         addLFG(message);
     } else if (message.content.split(' ')[0] === '!lfgadd') { // Hopefully the parameters will be sorted out with the new framework
