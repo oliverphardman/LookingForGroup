@@ -19,9 +19,9 @@ config.save = function () {
 
 config.checkUser = function(USER_ID){
   for(let i = 0; i <= Object.keys(config.data).length - 1; i++){
-    let obj =  Object.keys(config.data)[i]
-    let obj2 = Object.keys(config.data[obj])
-    if(config.data[obj][obj2[1]].members.includes(USER_ID)){
+    let objectKeys =  Object.keys(config.data)[i]
+    let keysOfObjectKeys = Object.keys(config.data[objectKeys])
+    if(config.data[objectKeys][keysOfObjectKeys[1]].members.includes(USER_ID)){
       return false
     }
   }
