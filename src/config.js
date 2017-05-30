@@ -17,6 +17,18 @@ config.save = function () {
     });
 };
 
+config.checkUser = function(USER_ID){
+  for(let i = 0; i <= Object.keys(config.data).length - 1; i++){
+    let objectKeys =  Object.keys(config.data)[i]
+    let keysOfObjectKeys = Object.keys(config.data[objectKeys])
+    if(config.data[objectKeys][keysOfObjectKeys[1]].members.includes(USER_ID)){
+      return false
+    }
+  }
+  return true
+}
+
+
 // Adds a user a session
 config.addUser = function (GUILD_ID, ROLE_ID, USER_ID) {
     return new Promise((resolve, reject) => {
