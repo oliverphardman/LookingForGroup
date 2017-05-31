@@ -71,6 +71,7 @@ config.createSession = function (GUILD_ID, USER_ID, ROLE_ID, GAME, CHANNEL_ID, M
 };
 
 config.removeSession = function(GUILD_ID, ROLE_ID){
+    initIfNeeded(GUILD_ID);
     delete config.data[GUILD_ID][ROLE_ID];
     config.save();
 };

@@ -1,6 +1,7 @@
 const config = require('./config.js');
 const Discord = require('discord.js');
 const bot = new Discord.Client();
+var timer;
 
 require('dotenv').config();
 //Adds a game to the verified list !lfgadd
@@ -134,11 +135,14 @@ function addLFG(MESSAGE) {
                                             }).catch(errr => {
                                                 console.error(errr);
                                             });
+
                                     });
                             }).catch(err => {
                                 console.error(err);
                             });
                         });
+
+
                 }
                 //End of session creation
                 //Adds user to existing session
@@ -161,14 +165,22 @@ function addLFG(MESSAGE) {
                             }
                         });
                 }
+
+
             });
+
+            // Start timer
+            timer = Date.now();
+
+
         });
+
+
 }
 
 function endSession(message){
     var author = message.author,
         guild_id = message.guild.id,
-        role_id = '',
         roles = message.member.roles.array(),
         role = null;
 
@@ -176,12 +188,12 @@ function endSession(message){
         role = roles[i];
 
         if(role.name.startsWith('lfg_')){
-            role_id = role.id;
+            break;
         }
     }
 
-    if(guild_id != null && (role_id != null || role_id != '')){
-        config.removeSession(guild_id, role_id);
+    if(guild_id != null && (role.id != null || role.id != '')){
+        config.removeSession(guild_id, role.id);
         role.delete();
 
         var channels = message.guild.channels.array();
