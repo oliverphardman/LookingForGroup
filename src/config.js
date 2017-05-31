@@ -17,6 +17,19 @@ config.save = function () {
     });
 };
 
+config.checkUser = function(USER_ID){
+  for(let i = 0; i <= Object.keys(config.data).length - 1; i++){
+    let objectKeys =  Object.keys(config.data)[i]
+    let keysOfObjectKeys = Object.keys(config.data[objectKeys])
+    if(config.data[objectKeys][keysOfObjectKeys[1]].members.includes(USER_ID)){
+      return false
+    }
+  }
+  return true
+}
+
+
+// Adds a user a session
 config.addUser = function (GUILD_ID, ROLE_ID, USER_ID) {
     return new Promise((resolve, reject) => {
         try {
@@ -49,6 +62,7 @@ config.addUser = function (GUILD_ID, ROLE_ID, USER_ID) {
     });
 };
 
+// Removes a user from the session
 config.removeUser = function (GUILD_ID, ROLE_ID, USER_ID) {
     initIfNeeded(GUILD_ID);
     if (USER_ID != config.data[GUILD_ID][ROLE_ID].creator) {
