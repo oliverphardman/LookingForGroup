@@ -18,15 +18,15 @@ config.save = function () {
 };
 
 config.checkUser = function(USER_ID){
-  for(let i = 0; i <= Object.keys(config.data).length - 1; i++){
-    let objectKeys =  Object.keys(config.data)[i]
-    let keysOfObjectKeys = Object.keys(config.data[objectKeys])
-    if(config.data[objectKeys][keysOfObjectKeys[1]].members.includes(USER_ID)){
-      return false
+    for(let i = 0; i <= Object.keys(config.data).length - 1; i++){
+        let objectKeys =  Object.keys(config.data)[i];
+        let keysOfObjectKeys = Object.keys(config.data[objectKeys]);
+        if(config.data[objectKeys][keysOfObjectKeys[1]].members.includes(USER_ID)){
+            return false;
+        }
     }
-  }
-  return true
-}
+    return true;
+};
 
 
 // Adds a user a session
@@ -168,6 +168,7 @@ config.getRoleByReaction = function (REACTION, GUILD_ID) { //https://stackoverfl
     }
 };
 
+// Find a session
 config.findSession = function (GUILD_ID, GAME) {
     return new Promise((resolve, reject) => {
         if (config.data[GUILD_ID] === undefined) {
@@ -183,6 +184,7 @@ config.findSession = function (GUILD_ID, GAME) {
     });
 };
 
+// Get channel ID
 config.getChannelID = function (GUILD_ID, SESSION) {
     return new Promise((resolve, reject) => {
         initIfNeeded(GUILD_ID);
@@ -191,6 +193,7 @@ config.getChannelID = function (GUILD_ID, SESSION) {
 
 };
 
+// Initialises GUILD_ID if necessary
 function initIfNeeded(GUILD_ID) {
     if (config.data[GUILD_ID] === undefined || config.data[GUILD_ID].games === undefined) {
         config.data[GUILD_ID] = {
