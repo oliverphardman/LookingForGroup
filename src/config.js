@@ -18,15 +18,15 @@ config.save = function () {
 };
 
 config.checkUser = function(USER_ID){
-  for(let i = 0; i <= Object.keys(config.data).length - 1; i++){
-    let objectKeys =  Object.keys(config.data)[i]
-    let keysOfObjectKeys = Object.keys(config.data[objectKeys])
-    if(config.data[objectKeys][keysOfObjectKeys[1]].members.includes(USER_ID)){
-      return false
+    for(let i = 0; i <= Object.keys(config.data).length - 1; i++){
+        let objectKeys =  Object.keys(config.data)[i];
+        let keysOfObjectKeys = Object.keys(config.data[objectKeys]);
+        if(config.data[objectKeys][keysOfObjectKeys[1]].members.includes(USER_ID)){
+            return false;
+        }
     }
-  }
-  return true
-}
+    return true;
+};
 
 
 // Adds a user a session
@@ -38,24 +38,28 @@ config.addUser = function (GUILD_ID, ROLE_ID, USER_ID) {
                 if (config.data[GUILD_ID][ROLE_ID].game == config.data[GUILD_ID].games[i][0]) {
                     if (config.data[GUILD_ID][ROLE_ID].members.length < config.data[GUILD_ID].games[i][1]) {
                         if (config.data[GUILD_ID][ROLE_ID].members.includes(USER_ID) == false) { //Makes sure there will be no duplicate entries in the player list
-                            config.data[GUILD_ID][ROLE_ID].members.push(USER_ID)
-                            config.save()
+                            config.data[GUILD_ID][ROLE_ID].members.push(USER_ID);
+                            config.save();
 
                             if (config.data[GUILD_ID][ROLE_ID].members.length == config.data[GUILD_ID].games[i][1]) {
-                                config.data[GUILD_ID].games[i].full = true
-                                resolve(config.data[GUILD_ID].games[i])
+                                config.data[GUILD_ID].games[i].full = true;
+                                resolve(config.data[GUILD_ID].games[i]);
                             } else {
-                                var result = config.data[GUILD_ID].games[i]
-                                resolve(result)
+                                var result = config.data[GUILD_ID].games[i];
+                                resolve(result);
                             }
                         }
+                    } else {
+                        //GROUP IS FULL. DO WHATEVER
+                        console.log('Group full');
+                        reject('full');
                     }
                 }
             }
         } catch (err) {
-            reject(err)
+            reject(err);
         }
-    })
+    });
 };
 
 // Removes a user from the session
@@ -77,6 +81,12 @@ config.createSession = function (GUILD_ID, USER_ID, ROLE_ID, GAME, CHANNEL_ID, M
         members: [],
         messageid: MESSAGE_ID
     };
+    config.save();
+};
+
+config.removeSession = function(GUILD_ID, ROLE_ID){
+    initIfNeeded(GUILD_ID);
+    delete config.data[GUILD_ID][ROLE_ID];
     config.save();
 };
 
@@ -158,6 +168,7 @@ config.getRoleByReaction = function (REACTION, GUILD_ID) { //https://stackoverfl
     }
 };
 
+// Find a session
 config.findSession = function (GUILD_ID, GAME) {
     return new Promise((resolve, reject) => {
         if (config.data[GUILD_ID] === undefined) {
@@ -173,6 +184,7 @@ config.findSession = function (GUILD_ID, GAME) {
     });
 };
 
+// Get channel ID
 config.getChannelID = function (GUILD_ID, SESSION) {
     return new Promise((resolve, reject) => {
         initIfNeeded(GUILD_ID);
@@ -181,6 +193,7 @@ config.getChannelID = function (GUILD_ID, SESSION) {
 
 };
 
+// Initialises GUILD_ID if necessary
 function initIfNeeded(GUILD_ID) {
     if (config.data[GUILD_ID] === undefined || config.data[GUILD_ID].games === undefined) {
         config.data[GUILD_ID] = {
