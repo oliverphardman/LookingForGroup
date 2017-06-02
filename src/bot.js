@@ -17,7 +17,7 @@ function addGame(MESSAGE) {
     }
     var PARAMS = MESSAGE.content.split(' ').slice(1);
     (PARAMS.length);
-    if (PARAMS.length <= 1) {
+    if (PARAMS.length <= 1 || PARAMS[0].match(/[^0-9]/)) {
         MESSAGE.reply('Sorry that didn\'t work. Did you type the command like this: `!lfgadd <MAX PLAYERS> <GAME>`');
         return;
     }
@@ -26,10 +26,17 @@ function addGame(MESSAGE) {
         MESSAGE.reply('Sorry, due to Discord limitations max players need to be less than 99.');
         return;
     }
-    var GAME = '';         // Game name
-    for (var i = 1; i < PARAMS.length; i++) {
-        GAME += PARAMS[i];
+    var GAME = PARAMS[1]; // Game name
+    for (var i = 2; i < PARAMS.length; i++) {
+        GAME += '-' + PARAMS[i];
     }
+
+    if(GAME.match(/[^a-zA-Z0-9_\-\s]/)){
+        MESSAGE.reply('Sorry, due to Discord limitations game names must be alphanumerical. Names can also contain dashes/underscores.')
+        return;
+    }
+    
+
     config.addGame(MESSAGE.guild.id, GAME, LIMIT)
         .then(RESULT => {
             MESSAGE.reply(`Success.\n Added **${GAME}** (max. **${LIMIT} players**) to the verified games list.`);
@@ -300,7 +307,7 @@ function removeLFG(message) {
 // Events
 bot.on('ready', () => {
     console.log('Online');
-    bot.generateInvite(['READ_MESSAGES', 'SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_ROLES']).then(invite => {
+    bot.generateInvite(['KICK_MEMBERS', 'MANAGE_CHANNELS', 'ADD_REACTIONS', 'READ_MESSAGES', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'CONNECT', 'SPEAK', 'MOVE_MEMBERS', 'USE_VAD', 'CHANGE_NICKNAME', 'MANAGE_ROLES']).then(invite => {
         console.log(`Use the following link to invite: ${invite}`);
     });
 });
