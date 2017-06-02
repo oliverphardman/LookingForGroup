@@ -113,15 +113,23 @@ config.removeGame = function (GUILD_ID, GAME) {
     return new Promise((resolve, reject) => {
         try {
             initIfNeeded(GUILD_ID);
-            var newGameArray = config.data[GUILD_ID].games.filter(function (val) { // Clone the Games array wothout the selected game
-                if (val[0] === GAME) {
+            //Prevents the bot stating a non-existant game was deleted
+            var triggerModification = false;
+            var newGameArray = config.data[GUILD_ID].games.filter(function (val) {
+                if (val[0] != GAME){
+                    return val;
+                } else{
+                    triggerModification = true;
                     return false;
                 }
-                return true;
             });
-            config.data[GUILD_ID].games = newGameArray; // Update the existing games array
-            config.save();
-            resolve(true);
+            if(triggerModification){
+                config.data[GUILD_ID].games = newGameArray; // Update the existing games array
+                config.save();
+                resolve(true);
+            } else{
+                reject(false);
+            }
         } catch (err) {
             reject(false);
         }
