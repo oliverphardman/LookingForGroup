@@ -310,7 +310,7 @@ bot.on('ready', () => {
 });
 
 function cleanGuild(MESSAGE){
-	if(sudoMode.indexOf(MESSAGE.guild.id)){
+	if(sudoMode.indexOf(MESSAGE.guild.id) > -1){
 		sudoMode.splice(sudoMode.indexOf(MESSAGE.guild.id),1);
 	    config.cleanGuild(MESSAGE.guild.id).then(RESULT => {
             MESSAGE.reply(`Success. This server's data has been cleared.`);
