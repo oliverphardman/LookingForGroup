@@ -74,7 +74,8 @@ function help(MESSAGE) {
     \`!lfgremove PLAYERLIMIT\`  - Remove a playable game
     \`!lfgend\`  - Terminate a currently active session (must be run in the session's text channel)
     \`!lfg games\`  - Shows all games playable
-    \`!lfg sessions\`  - Shows all active sessions   
+    \`!lfg sessions\`  - Shows all active sessions
+    \`!lfg clean\`  - Removes all data associated with this server     
     \`!lfg help\`  - Shows this dialog (help)`);
 }
 
@@ -270,7 +271,7 @@ function endSession(message) {
     }
 
     if (guild_id != null && (role.id != null || role.id != '')) {
-        config.removeSession(guild_id, role.id, false);
+        config.removeSession(guild_id, role.id);
         role.delete();
 
         var channels = message.guild.channels.array();
