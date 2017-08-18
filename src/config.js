@@ -28,17 +28,31 @@ config.checkUser = function(USER_ID) {
     return true;
 };
 
-config.cleanGuild = function(GUILD_ID){
+config.cleanGuild = function(GUILD_ID) {
     return new Promise((resolve, reject) => {
-        try{
+        try {
             delete config.data[GUILD_ID];
             config.save();
             resolve(true);
-        } catch(err) {
+        } catch (err) {
             reject(false);
         }
     });
 };
+
+config.scanForMsdID = function(MESSAGE_ID, GUILD_ID){
+  return new Promise((resolve, reject) => {
+    for(let x=3;x<Object.keys(config.data[GUILD_ID]).length;x++){
+      console.log(Object.keys(config.data[GUILD_ID])[x]);
+      if(config.data[GUILD_ID][Object.keys(config.data[GUILD_ID])[x]].messageid == MESSAGE_ID){
+        return resolve(config.data[GUILD_ID][x]);
+      }
+      }
+
+    reject(false);
+  });
+  };
+
 
 // Adds a user to a session
 config.addUser = function(GUILD_ID, ROLE_ID, USER_ID) {
@@ -189,7 +203,7 @@ config.getRoleByReaction = function(REACTION, GUILD_ID) { //https://stackoverflo
     }
 };
 
-config.getGuildCount = function(){
+config.getGuildCount = function() {
     return Object.keys(config.data).length;
 }
 
@@ -208,6 +222,30 @@ config.findSession = function(GUILD_ID, GAME) {
 
 };
 
+config.getSetting = function(SETTING, GUILD_ID) {
+    return config.data[GUILD_ID].options[SETTING];
+}
+
+config.setSetting = function(SETTING, GUILD_ID, VALUE) {
+   initIfNeeded(GUILD_ID);
+   return new Promise((resolve, reject) => {
+     try{
+       if(config.data[GUILD_ID].options.hasOwnProperty(SETTING)){
+         if(SETTING == "inactivityDrop" && VALUE < config.getSetting('sessionWarn', GUILD_ID)){
+           reject("The inactivityDrop value cannot be less than the sessionWarn value.");
+         }
+       config.data[GUILD_ID].options[SETTING] = parseInt(VALUE);
+       config.save();
+      resolve(true);
+    }else{
+      reject("NONEXISTANT");
+    }
+    } catch(err) {
+       reject(false);
+     }
+   });
+}
+
 // Get channel ID
 config.getChannelID = function(GUILD_ID, SESSION) {
     return new Promise((resolve, reject) => {
@@ -222,7 +260,12 @@ function initIfNeeded(GUILD_ID) {
     if (config.data[GUILD_ID] === undefined || config.data[GUILD_ID].games === undefined) {
         config.data[GUILD_ID] = {
             games: {},
-            sessions: []
+            sessions: [],
+            options: {
+                "sessionWarn": 2,
+                "sessionCap": 24,
+                "inactivityDrop": 15
+            }
         };
     }
 }
