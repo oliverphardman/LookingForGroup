@@ -9,7 +9,7 @@
     "start": "node src/bot.js"
   },
   "dependencies": {
-    "discord.js": "^11.1.0",
+    "discord.js": "git+https://github.com/hydrabolt/discord.js.git",
     "dotenv": "^4.0.0",
     "moment": "^2.18.1"
   },
