@@ -97,15 +97,17 @@ config.removeUser = function(GUILD_ID, ROLE_ID, USER_ID) {
 };
 
 // Creates a new configuration (config.json) for the current guild
-config.createSession = function(GUILD_ID, USER_ID, ROLE_ID, GAME, CHANNEL_ID, MESSAGE_ID) {
+config.createSession = function(GUILD_ID, USER_ID, ROLE_ID, GAME, T_CHANNEL_ID, V_CHANNEL_ID, MESSAGE_ID, CHANNEL_ID) {
     initIfNeeded(GUILD_ID);
     config.data[GUILD_ID][ROLE_ID] = {
         creator: USER_ID,
         game: GAME,
-        channel: CHANNEL_ID,
+        text_channel: T_CHANNEL_ID,
+        voice_channel: V_CHANNEL_ID,
         limit: config.data[GUILD_ID].games[GAME].LIMIT,
         members: [USER_ID],
-        messageid: MESSAGE_ID
+        messageid: MESSAGE_ID,
+        channelid: CHANNEL_ID
     };
     config.data[GUILD_ID].sessions.push(ROLE_ID);
     config.save();
@@ -175,6 +177,13 @@ config.getGames = function(GUILD_ID) {
     initIfNeeded(GUILD_ID);
     return config.data[GUILD_ID].games;
 };
+
+config.getSession = function(GUILD_ID, ROLE_ID){
+  initIfNeeded(GUILD_ID)
+  var session = config.data[GUILD_ID]["372180764189786113"]
+  console.log(config.data[GUILD_ID]["372180764189786113"])
+  return session
+}
 
 // Returns a list of sessions
 config.getSessions = function(GUILD_ID) {

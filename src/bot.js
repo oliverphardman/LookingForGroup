@@ -130,7 +130,8 @@ function addLFG(MESSAGE) {
     var AUTHOR = MESSAGE.author,
         GUILD_ID = MESSAGE.guild.id,
         PARAMS = MESSAGE.content.split(' ').slice(1);
-    GAME = PARAMS[0];
+        GAME = PARAMS[0];
+        LOBBY_LIMIT = PARAMS[1];
     config.getGame(GUILD_ID, GAME).then(RESULT => {
         if (RESULT === false) {
             //Game not found
@@ -145,12 +146,13 @@ function addLFG(MESSAGE) {
                 name: 'TEMP'
             }).then(ROLE => {
                 ROLE.edit({
-                    name: 'lfg_' + GAME.toLowerCase()
+                    name: 'lfg_' + ROLE.id.toString()
                 });
+
                 //Adds role to the user
                 MESSAGE.member.addRole(ROLE).then(() => {
                     // Creates a text channel
-                    MESSAGE.guild.createChannel('lfg_' + GAME.toLowerCase(), "text").then(TEXT_CHANNEL => {
+                    MESSAGE.guild.createChannel('lfg_' + GAME.toLowerCase() + ROLE.id.toString(), "text").then(TEXT_CHANNEL => {
                         //Sets permissions
                         TEXT_CHANNEL.overwritePermissions(GUILD_ID, {
                             'SEND_MESSAGES': false,
@@ -167,12 +169,15 @@ function addLFG(MESSAGE) {
                         });
                         const games = config.getGames(GUILD_ID);
                         const maxPlayers = games[GAME]['LIMIT'];
+                        if(LOBBY_LIMIT === null){
+                          LOBBY_LIMIT = maxPlayers
+                        }
                         TEXT_CHANNEL.send('Text channel for ' + GAME);
                         TEXT_CHANNEL.send('Don\'t forget to type !lfgend when you are done!');
                         // Creates a voice channel with a maximum user limit
-                        MESSAGE.guild.createChannel('lfg_' + GAME.toLowerCase(), 'voice').then(VOICE_CHANNEL => {
+                        MESSAGE.guild.createChannel('lfg_' + GAME.toLowerCase() + ROLE.id.toString(), 'voice').then(VOICE_CHANNEL => {
                             //VOICE_CHANNEL.join()
-                            VOICE_CHANNEL.setUserLimit(maxPlayers).then(VOICE_CHANNEL => {
+                            VOICE_CHANNEL.setUserLimit(LOBBY_LIMIT).then(VOICE_CHANNEL => {
                                 VOICE_CHANNEL.overwritePermissions(GUILD_ID, {
                                     'CONNECT': false
                                 });
@@ -229,9 +234,9 @@ function addLFG(MESSAGE) {
                                     //Normally 900000
                                 }, 60000);
                             });
-                            MESSAGE.reply(`Success.\nGame created in **<#${TEXT_CHANNEL.id}>**. Click the + reaction below to join. Click it again to leave.`).then(m => {
+                            MESSAGE.reply(`Lobby for ` + LOBBY_LIMIT + ` ` + GAME + ` players. Click the + reaction below to join. Click it again to leave.`).then(m => {
                                 m.react('➕');
-                                config.createSession(GUILD_ID, AUTHOR.id, ROLE.id, GAME, TEXT_CHANNEL.id, m.id); // Testing params for now
+                                config.createSession(GUILD_ID, AUTHOR.id, ROLE.id, GAME, TEXT_CHANNEL.id, VOICE_CHANNEL.id, m.id, m.channel.id); // Testing params for now
                                 config.addUser(GUILD_ID, ROLE.id, AUTHOR.id).then(data => {
                                     if (data == 'full') {
                                         MESSAGE.channel.sendMessage('**' + GAME + '** is now full!');
@@ -288,6 +293,15 @@ function addLFG(MESSAGE) {
         }
     });
 }
+
+function deleteCreationMessage(guild, groupID){
+    session = config.getSession(guild.id, groupID)
+    console.log(guild.id)
+    console.log(groupID)
+    console.log(session)
+    guild.channels.get(session['channelid']).messages.get(session['messageid']).delete()
+}
+
 /*
     Ends a session
  */
@@ -302,7 +316,11 @@ function endSession(message) {
             break;
         }
     }
+
+    deleteCreationMessage(message.guild, role.id)
+
     if (guild_id != null && (role.id != null || role.id != '')) {
+
         config.removeSession(guild_id, role.id);
         role.delete();
         var channels = message.guild.channels.array();
@@ -312,7 +330,7 @@ function endSession(message) {
                 channel.delete().then().catch(console.error);
             }
         }
-        message.reply('Session has ended');
+        message.reply('Session has ended.');
         clearInterval(channelActivityInterval);
     } else {
         message.reply('Oops! Could not find an LFG role!');

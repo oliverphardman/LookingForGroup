@@ -1,0 +1,2 @@
+- Add validation for the maximum number of players while using !lfgadd
+- Prevent mods from removing non-existant games (!lfgremove)
