@@ -1,16 +1,32 @@
+//Establish constants
 const config = require('./config.js');
 const Discord = require('discord.js');
+const fs = require('fs')
 const bot = new Discord.Client();
+const version = "0.1"
 var timerInterval;
 var channelActivityInterval;
 var sudoMode = [];
+//Used for retrieving the client secret environment variable
 require('dotenv').config();
-/*
-    Adds a game to the verified list !lfgadd
- */
+
+//Called when there is an error.
+function logError(ERROR, ERROR_CONTENT, GUILD_ID) {
+    //Create text file stream
+    var stream = fs.createWriteStream("log.txt");
+    stream.once('open', function(fd) {
+        stream.write("***ERROR***\n")
+        stream.write("Guild ID: " + GUILD_ID + "\n")
+        stream.write("Friendly error message: " + ERROR + "\n")
+        stream.write("Technical info: " + ERROR_CONTENT + "\n")
+        stream.end();
+    })
+    //Log the error in the console
+    console.log("ERROR: " + ERROR)
+}
+//Allows an admin to set various options
 function setOption(MESSAGE) {
     if (MESSAGE.channel.guild.ownerID !== MESSAGE.author.id) {
-        MESSAGE.reply('This is an administrative command, only the server owner can run it.');
         return
     }
     var PARAMS = MESSAGE.content.split(' ').slice(1);
@@ -31,59 +47,71 @@ function setOption(MESSAGE) {
         }
     });
 }
-
+//Allow administrators to add games
 function addGame(MESSAGE) {
-    // Verify if the user is the guild owner
-    if (MESSAGE.channel.guild.ownerID !== MESSAGE.author.id) {
-        MESSAGE.reply('This is an administrative command, only the server owner can run it.');
-        MESSAGE.reply('Performing the command anyway while testing (shh, don\'t tell anybody!)');
-        //return;
+    // Verify if the user is an administrator
+    if (MESSAGE.member.hasPermission("ADMINISTRATOR") == false) {
+        return
     }
+    //Get the parameters of the command
     var PARAMS = MESSAGE.content.split(' ').slice(1);
     (PARAMS.length);
+    //Validation of the parameters
     if (PARAMS.length <= 1 || PARAMS[0].match(/[^0-9]/)) {
         MESSAGE.reply('Sorry that didn\'t work. Did you type the command like this: `!lfgadd <MAX PLAYERS> <GAME>`');
         return;
     }
+    //Establishes LIMIT parameter
     var LIMIT = PARAMS[0]; // Player limit
+    //Make sure the player limit does not exceed 99
     if (LIMIT >= 99) {
         MESSAGE.reply('Sorry, due to Discord limitations max players need to be less than 99.');
         return;
     }
-    var GAME = PARAMS[1]; // Game name
+    if (LIMIT < 2){
+        MESSAGE.reply('Groups must have at least two people in them.');
+        return;
+    }
+    //Establish the game name parameter
+    var GAME = PARAMS[1]
+    //Hyphenates the game name (removes spaces)
     for (var i = 2; i < PARAMS.length; i++) {
         GAME += '-' + PARAMS[i];
     }
+    //Makes sure the game name is alphanumerical
     if (GAME.match(/[^a-zA-Z0-9_\-\s]/)) {
         MESSAGE.reply('Sorry, due to Discord limitations game names must be alphanumerical. Names can also contain dashes/underscores.')
         return;
     }
+    //Stores the game in the guild's DB
     config.addGame(MESSAGE.guild.id, GAME, LIMIT).then(RESULT => {
+        //Stored successfully
         MESSAGE.reply(`Success.\n Added **${GAME}** (max. **${LIMIT} players**) to the verified games list.`);
     }).catch(err => {
-        MESSAGE.reply(`Error.\n **${GAME}** could not be added.`);
+        //Something bad happened
+        logError("Failed to add game \"" + GAME + "\" to the games list.", err, MESSAGE.guild.id)
+        MESSAGE.reply(`There was an error. Try again or contact the bot operators.`)
     });
 }
-/*
-    Removes a game from the verified list !lfgremove
- */
+//Removes a game from the list of approved games
 function removeGame(MESSAGE) {
     // Verify if the user is the guild owner
-    if (MESSAGE.channel.guild.ownerID !== MESSAGE.author.id) {
-        MESSAGE.reply('This is an administrative command, only the server owner can run it.');
+    if (MESSAGE.member.hasPermission("ADMINISTRATOR") == false) {
         return;
     }
+    //Establish the parameters
     var PARAMS = MESSAGE.content.split(' ').slice(1);
     var GAME = PARAMS[0];
+    //Attempt to remove the game from the list
     config.removeGame(MESSAGE.guild.id, GAME).then(RESULT => {
+        //Operation was successful
         MESSAGE.reply(`Success.\n **${GAME}** has been removed from the verified list.`);
     }).catch(err => {
+        //The game was not in the list or there was an error
         MESSAGE.reply(`Error.\n **${GAME}** is not in the verified list.`);
     });
 }
-/*
-    Help command !lfg help
- */
+//The help function telling the user all the commands (may need updating)
 function help(MESSAGE) {
     MESSAGE.channel.send(`Here are my available commands:
     \`!lfg GAMENAME\`  - Creates a new guild
@@ -93,61 +121,105 @@ function help(MESSAGE) {
     \`!lfgend\`  - Terminate a currently active session (must be run in the session's text channel)
     \`!lfg games\`  - Shows all games playable
     \`!lfg sessions\`  - Shows all active sessions
-    \`!lfg clean\`  - Removes all data associated with this server
-    \`!lfg help\`  - Shows this dialog (help)`);
+    \`!lfg purge\`  - Removes all data associated with this server
+    \`!lfg clean roles\`  - Removes all roles related to LFG
+    \`!lfg clean sessions\`  - Removes all LFG sessions
+    \`!lfg about\`  - Provides information about the bot
+    \`!lfg help\`  - Shows this dialog (help). You already knew that.`);
 }
-/*
-    Show all defined games !lfg games
- */
+//Tells the user information about the bot
+function about(MESSAGE) {
+    MESSAGE.channel.send(`LookingForGroup v${version}
+    Developed by the LFG development team.
+    https://github.com/starsky135/LookingForGroup
+    We <3 Discord!`)
+}
+//Lists all of the games the user can choose from
 function showGames(MESSAGE) {
-    var allGames = 'Here are all the available games: ';
+    //Base text
+    var allGames = 'Here are all the available games:';
+    //Fetch games from config
     const gamesObject = config.getGames(MESSAGE.guild.id);
+    //Get keys from object
     const gamesObjectKeys = Object.keys(gamesObject);
+    //Repeat for every game
     gamesObjectKeys.forEach((key, index) => {
-        allGames += '**' + key + '** (max. ' + gamesObject[key]['LIMIT'] + ')';
+        //Construct the message segment
+        allGames += '\n**' + key + '** (max. ' + gamesObject[key]['LIMIT'] + ')';
+        //Add comma if needed
         if (index < (gamesObjectKeys.length - 1)) {
             allGames += ', ';
         }
     });
+    //Send the constructed message
     MESSAGE.channel.send(allGames);
 }
-//Show all sessions !lfg sessions
+//Lists all of the sessions in progress
 function showSessions(MESSAGE) {
-    var allSessions = 'Here are all the available sessions: ';
+    //Base text
+    var allSessions = 'Here are all the available sessions:';
+    //Fetch sessions from config
     var sessionsArray = config.getSessions(MESSAGE.guild.id);
+    //Repeat for every session
     sessionsArray.forEach((val, index) => {
-        allSessions += '**' + val[0] + '** (' + val[1] + '/' + val[2] + ')';
+        //Construct the message segment
+        allSessions += '\n**' + val[0] + '** (' + val[1] + '/' + val[2] + ')';
+        //Add comma if needed
         if (index < (sessionsArray.length - 1)) {
             allSessions += ', ';
         }
     });
+    //Send the constructed message
     MESSAGE.channel.send(allSessions);
 }
-/*
-    Assigns a user into a session !lfg <GAME>
- */
+//Creats a new session (group)
 function addLFG(MESSAGE) {
     var AUTHOR = MESSAGE.author,
         GUILD_ID = MESSAGE.guild.id,
         PARAMS = MESSAGE.content.split(' ').slice(1);
-        GAME = PARAMS[0];
-        LOBBY_LIMIT = PARAMS[1];
+    GAME = PARAMS[0];
+    //Check to see if the game is approved
     config.getGame(GUILD_ID, GAME).then(RESULT => {
         if (RESULT === false) {
             //Game not found
             return MESSAGE.reply(`Error.
-                Invalid game specified (Please contact server Admin to add the game).
-                Alternatively, if you are an Admin use the !lfgadd command.`);
+                Invalid game specified (Please contact a server admin to add the game).
+                Alternatively, if you are an admin use the !lfgadd command.`);
+        }
+        //Check to see if the user is already in a group
+        USER_ROLES = MESSAGE.member.roles
+        //Search the user's roles for one called "lfg"
+        if (USER_ROLES.find("name", "lfg")) {
+            return MESSAGE.reply(`Error.
+              You are already in a group. Please leave the group or contact the server admin for help.`)
         }
         //Search if lobby exists before creating new session (modularisation FTW)
         if (config.findSession(GUILD_ID, GAME) === false) {
-            //Creates new session
+            //Creates new role
             MESSAGE.guild.createRole({
                 name: 'TEMP'
             }).then(ROLE => {
                 ROLE.edit({
-                    name: 'lfg_' + ROLE.id.toString()
+                    name: 'lfg'
                 });
+                //Get the games object from the config
+                const games = config.getGames(GUILD_ID);
+                //If the user hasn't specified a lobby limit, set it to the maximum allowed for that game. If not, set it to the user provided limit.
+                if (PARAMS[1] == null) {
+                    LOBBY_LIMIT = games[GAME]['LIMIT'];
+                } else if(LOBBY_LIMIT > games[GAME]['LIMIT']){
+                    return MESSAGE.reply(`Error
+                        You cannot have more than ${games[GAME]['LIMIT']} people in a group for this game.`)
+                }else if(LOBBY_LIMIT < 2){
+                    return MESSAGE.reply(`Error
+                        There must be at least 2 people in a group.`)
+                }else if(Number.isInteger(LOBBY_LIMIT)){
+                    return MESSAGE.reply(`Error
+                        Invalid number.`)
+                }else{
+                    LOBBY_LIMIT = PARAMS[1]
+                }
+
 
                 //Adds role to the user
                 MESSAGE.member.addRole(ROLE).then(() => {
@@ -155,181 +227,154 @@ function addLFG(MESSAGE) {
                     MESSAGE.guild.createChannel('lfg_' + GAME.toLowerCase() + ROLE.id.toString(), "text").then(TEXT_CHANNEL => {
                         //Sets permissions
                         TEXT_CHANNEL.overwritePermissions(GUILD_ID, {
+                            //Stop everyone from being able to see the channel
                             'SEND_MESSAGES': false,
                             'READ_MESSAGES': false
                         });
                         TEXT_CHANNEL.overwritePermissions(ROLE, {
+                            //Allow people in the group to send and read messages
                             'SEND_MESSAGES': true,
                             'READ_MESSAGES': true
                         });
                         TEXT_CHANNEL.overwritePermissions(bot.user, {
+                            //Give the bot permissions because robots have rights
                             'SEND_MESSAGES': true,
                             'READ_MESSAGES': true,
                             'ADMINISTRATOR': true
                         });
-                        const games = config.getGames(GUILD_ID);
-                        const maxPlayers = games[GAME]['LIMIT'];
-                        if(LOBBY_LIMIT === null){
-                          LOBBY_LIMIT = maxPlayers
-                        }
+                        //Send messages to alert the user to the channel's creation
                         TEXT_CHANNEL.send('Text channel for ' + GAME);
-                        TEXT_CHANNEL.send('Don\'t forget to type !lfgend when you are done!');
+                        TEXT_CHANNEL.send('<@' + AUTHOR.id + '> Welcome to your group\'s text channel. You also have a voice channel to use.')
+                        TEXT_CHANNEL.send('Please don\'t forget to type !lfgend when you are done!');
                         // Creates a voice channel with a maximum user limit
                         MESSAGE.guild.createChannel('lfg_' + GAME.toLowerCase() + ROLE.id.toString(), 'voice').then(VOICE_CHANNEL => {
-                            //VOICE_CHANNEL.join()
+                            //Set the limit for the maximum number of users who can enter the voice channel
                             VOICE_CHANNEL.setUserLimit(LOBBY_LIMIT).then(VOICE_CHANNEL => {
+                                //Stop everyone from being able to connect to the channel
                                 VOICE_CHANNEL.overwritePermissions(GUILD_ID, {
                                     'CONNECT': false
                                 });
                                 VOICE_CHANNEL.overwritePermissions(ROLE, {
+                                    //Allow group members to join
                                     'CONNECT': true
                                 });
                                 VOICE_CHANNEL.overwritePermissions(bot.user, {
+                                    //Give the bot permissions to join because he's pretty swell.
                                     'CONNECT': true
                                 });
-                                var minTimer = 0;
-                                var minPeriod = config.getSetting('inactivityDrop', MESSAGE.guild.id) - config.getSetting('sessionWarn', MESSAGE.guild.id);
-                                setTimeout(function() {
-                                    endSession(MESSAGE);
-                                }, (config.getSetting('sessionCap', MESSAGE.guild.id) * 60 * 60 * 1000));
-                                // Check channel activity
-                                channelActivityInterval = setInterval(function() {
-                                    //if(activeSession){
-                                    var textChannelMessage = TEXT_CHANNEL.messages.fetch().then(MESSAGES => {
-                                        var messageArray = MESSAGES.array();
-                                        if (messageArray.length > 0) {
-                                            if (minTimer >= minPeriod) {
-                                                messageArray.sort(function(a, b) {
-                                                    return a - b;
-                                                });
-                                                var newestMessage = messageArray[0];
-                                                // This is in seconds. 15 minutes = 900 seconds
-                                                var timeSincePosted = (Date.now() - newestMessage.createdTimestamp) / 1000;
-                                                // If no message has been posted for at least 15 minutes
-                                                if (timeSincePosted >= minPeriod) {
-                                                    // Check how many people are in the voice channel
-                                                    if (VOICE_CHANNEL.members.array().length <= 1) {
-                                                        if (minTimer >= config.getSetting('inactivityDrop', MESSAGE.guild.id)) {
-                                                            endSession(MESSAGE);
-                                                        } else {
-                                                            TEXT_CHANNEL.send("Warning: This session will end shortly. Please type a message now if you wish to keep it.", {
-                                                                tts: true
-                                                            });
-                                                        }
-                                                    }
-                                                } else {
-                                                    if (newestMessage.author != bot.user) {
-                                                        minTimer = 0;
-                                                    }
-                                                }
-                                            }
+                                MESSAGE.reply(`Lobby for ` + LOBBY_LIMIT + ` ` + GAME + ` players. Click the + reaction below to join. Click it again to leave.`).then(m => {
+                                    m.react('➕');
+                                    config.createSession(GUILD_ID, AUTHOR.id, ROLE.id, GAME, TEXT_CHANNEL.id, VOICE_CHANNEL.id, m.id, m.channel.id); // Testing params for now
+                                    config.addUser(GUILD_ID, ROLE.id, AUTHOR.id).then(data => {
+                                        if (data == 'full') {
+                                            MESSAGE.channel.sendMessage('**' + GAME + '** is now full!');
                                         } else {
-                                            TEXT_CHANNEL.send('Text channel for ' + GAME);
-                                            TEXT_CHANNEL.send('Don\'t forget to type !lfgend when you are done!');
-                                            // The bot should have created a message in the channel, so the array shouldn't be empty
-                                            //MESSAGE.reply("Something went wrong");
+                                            MESSAGE.channel.send(config.data[GUILD_ID][ROLE.id].members.length + '/' + data[1] + ' members has joined **' + GAME + '**');
                                         }
                                     });
-                                    minTimer += 1;
-                                    //Normally 900000
-                                }, 60000);
-                            });
-                            MESSAGE.reply(`Lobby for ` + LOBBY_LIMIT + ` ` + GAME + ` players. Click the + reaction below to join. Click it again to leave.`).then(m => {
-                                m.react('➕');
-                                config.createSession(GUILD_ID, AUTHOR.id, ROLE.id, GAME, TEXT_CHANNEL.id, VOICE_CHANNEL.id, m.id, m.channel.id); // Testing params for now
-                                config.addUser(GUILD_ID, ROLE.id, AUTHOR.id).then(data => {
-                                    if (data == 'full') {
-                                        MESSAGE.channel.sendMessage('**' + GAME + '** is now full!');
-                                    } else {
-                                        MESSAGE.channel.send(config.data[GUILD_ID][ROLE.id].members.length + '/' + data[1] + ' members has joined **' + GAME + '**');
-                                    }
                                 });
+                            }).catch(errr => {
+                                console.error(errr);
                             });
-                        }).catch(errr => {
-                            console.error(errr);
                         });
+                    }).catch(err => {
+                        console.error(err);
                     });
-                }).catch(err => {
-                    console.error(err);
                 });
-            });
-        }
+                    })
+            }
         //End of session creation
         //Adds user to existing session
         else {
-          FOUND = config.findSession(GUILD_ID, GAME);
-          config.scanForMsdID
-
-
-          /* Broken ass code
-            config.addUser(GUILD_ID, FOUND, AUTHOR.id).then((data) => {
-                config.getChannelID(GUILD_ID, FOUND).then(CHN => {
-                    console.log(CHN);
-                    console.log("bill");
-                    MESSAGE.reply(`Success.\nYou have been added to a session in <#${CHN}>! :D`);
-                    MESSAGE.channel.send(config.data[GUILD_ID][FOUND].members.length + '/' + data[1] + ' members have joined **' + GAME + '**');
-                    MESSAGE.member.addRole(FOUND);
-                }).catch((err) => {
-                    console.log("uhoh");
-                    console.log(err);
-                });
-            }).catch((err, game) => {
-              console.log(CHN);
-              console.log(err);
-              console.log("sad");
-                if (err == 'full') {
-                    config.getChannelID(GUILD_ID, FOUND).then(CHN => {
-                        MESSAGE.reply('Sorry, group is full.');
-                        //shit broke yo
-                    });
-                }else{
-                  console.log("kek");
-                }
-            });
-
-*/
-
-
+            FOUND = config.findSession(GUILD_ID, GAME);
+            MESSAGE.channel.send("so we'd put you in a lobby right now but someone broke the code so lol. run !lfg clean sessions.")
         }
-    });
+    })
 }
 
-function deleteCreationMessage(guild, groupID){
+
+function deleteCreationMessage(guild, groupID) {
     session = config.getSession(guild.id, groupID)
-    console.log(guild.id)
-    console.log(groupID)
-    console.log(session)
     guild.channels.get(session['channelid']).messages.get(session['messageid']).delete()
 }
-
 /*
     Ends a session
  */
+function cleanRoles(MESSAGE) {
+    if (sudoMode.indexOf(MESSAGE.guild.id) > -1) {
+        sudoMode.splice(sudoMode.indexOf(MESSAGE.guild.id), 1);
+        MESSAGE.channel.send("Cleaning...")
+        var CLEAR_ROLES = MESSAGE.guild.roles.filter(function(element) {
+            return element.name.startsWith("lfg")
+        })
+        CLEAR_ROLES.deleteAll()
+        MESSAGE.channel.send("Cleaning is complete.")
+    } else {
+        sudoMode.push(MESSAGE.guild.id);
+        MESSAGE.channel.send("WARNING: This will delete all roles associated with the LFG bot. DO NOT run this while sessions are in progress. Use *!lfg purge*. If you wish to continue, type *!lfg clean roles* again.");
+    }
+}
+//Cleaning functions
+function cleanGuild(MESSAGE) {
+    if (sudoMode.indexOf(MESSAGE.guild.id) > -1) {
+        sudoMode.splice(sudoMode.indexOf(MESSAGE.guild.id), 1);
+        cleanRoles(MESSAGE)
+        config.cleanGuild(MESSAGE.guild.id).then(RESULT => {
+            MESSAGE.reply(`Success. This server's data has been cleared.`);
+        }).catch(err => {
+            MESSAGE.reply(`There was an error.`);
+        });
+    } else {
+        sudoMode.push(MESSAGE.guild.id);
+        MESSAGE.channel.send("WARNING: This will remove all bot-side data relating to your server. If you really want to do this, type the command again.");
+    }
+}
+
+function cleanSessions(MESSAGE) {
+    config.cleanSessions(MESSAGE.guild.id).then(RESULT => {
+        cleanChannels(MESSAGE)
+        MESSAGE.reply(`Success. All sessions have been cleared.`);
+    }).catch(err => {
+        MESSAGE.reply(`There was an error.`);
+    });
+}
+
+function cleanChannels(MESSAGE) {
+    var channels = MESSAGE.guild.channels.array();
+    for (var x = 0; x < channels.length; x++) {
+        var channel = channels[x];
+        if (channel.name.startsWith("lfg")) {
+            channel.delete()
+        }
+    }
+}
+//Function is run when the user forces a group to disband or the timer is triggered.
 function endSession(message) {
     var author = message.author,
         guild_id = message.guild.id,
-        roles = message.member.roles.array(),
+        roles = message.member.roles,
         role = null;
-    for (var i = 0; i < roles.length; i++) {
-        role = roles[i];
-        if (role.name.startsWith('lfg_')) {
-            break;
-        }
-    }
-
-    deleteCreationMessage(message.guild, role.id)
-
-    if (guild_id != null && (role.id != null || role.id != '')) {
-
-        config.removeSession(guild_id, role.id);
-        role.delete();
+    var LFG_ROLES = roles.filter(function(element) {
+        return element.name == "lfg"
+    })
+    ROLE = LFG_ROLES.first()
+    deleteCreationMessage(message.guild, ROLE.id)
+    SESSION = config.getSession(guild_id, ROLE.id)
+    if (guild_id != null && (ROLE.id != null || ROLE.id != '')) {
         var channels = message.guild.channels.array();
         for (var x = 0; x < channels.length; x++) {
             var channel = channels[x];
-            if (channel.name === role.name) {
-                channel.delete().then().catch(console.error);
+            if (channel.id == SESSION.text_channel) {
+                channel.delete()
+                SESSION.text_channel = 0
+            }
+            if (channel.id == SESSION.voice_channel) {
+                channel.delete()
+                SESSION.voice_channel = 0
             }
         }
+        config.removeSession(guild_id, ROLE.id);
+        LFG_ROLES.deleteAll()
         message.reply('Session has ended.');
         clearInterval(channelActivityInterval);
     } else {
@@ -343,7 +388,7 @@ function removeLFG(message) {}
 bot.on('guildCreate', GUILD => {
     config.initIfNeeded(GUILD.id);
 });
-// Events
+//EVENTS
 bot.on('ready', () => {
     console.log('LookingForGroup: A project by the LFG development team licesnsed under the MIT Public License.');
     console.log('Bot is ready.');
@@ -351,20 +396,6 @@ bot.on('ready', () => {
         console.log(`Use the following link to invite:\n\n${invite}\n`);
     });
 });
-
-function cleanGuild(MESSAGE) {
-    if (sudoMode.indexOf(MESSAGE.guild.id) > -1) {
-        sudoMode.splice(sudoMode.indexOf(MESSAGE.guild.id), 1);
-        config.cleanGuild(MESSAGE.guild.id).then(RESULT => {
-            MESSAGE.reply(`Success. This server's data has been cleared.`);
-        }).catch(err => {
-            MESSAGE.reply(`There was an error.`);
-        });
-    } else {
-        sudoMode.push(MESSAGE.guild.id);
-        MESSAGE.channel.send("WARNING: This will remove all bot-side data relating to your server. If you really want to do this, type the command again.");
-    }
-}
 bot.on('message', message => {
     if (message.author.bot) {
         return;
@@ -373,8 +404,14 @@ bot.on('message', message => {
         process.exit(0);
     } else if (message.content === '!lfg help') { // Help command (sends a description about the bot)
         help(message);
-    } else if (message.content === '!lfgclean') { // Help command (sends a description about the bot)
+    } else if (message.content === '!lfg about') { // Help command (sends a description about the bot)
+        about(message);
+    } else if (message.content === '!lfg purge') { // Help command (sends a description about the bot)
         cleanGuild(message);
+    } else if (message.content === '!lfg clean roles') { // Help command (sends a description about the bot)
+        cleanRoles(message);
+    } else if (message.content === '!lfg clean sessions') { // Help command (sends a description about the bot)
+        cleanSessions(message);
     } else if (message.content === '!lfg games') { // Show all games
         showGames(message);
     } else if (message.content === '!lfg sessions') { // Show all sessions
@@ -414,5 +451,6 @@ bot.on('messageReactionRemove', (reaction, user) => {
 });
 process.on('unhandledRejection', err => {
     console.error(`Uncaught Rejection (${err.status}): ${err && err.stack || err}`);
+    logError("Unhandled rejection!", err, "-")
 });
 bot.login(process.env.TOKEN);
