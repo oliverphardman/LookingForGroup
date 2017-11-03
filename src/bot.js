@@ -12,15 +12,11 @@ require('dotenv').config();
 
 //Called when there is an error.
 function logError(ERROR, ERROR_CONTENT, GUILD_ID) {
-    //Create text file stream
-    var stream = fs.createWriteStream("log.txt");
-    stream.once('open', function(fd) {
-        stream.write("***ERROR***\n")
-        stream.write("Guild ID: " + GUILD_ID + "\n")
-        stream.write("Friendly error message: " + ERROR + "\n")
-        stream.write("Technical info: " + ERROR_CONTENT + "\n")
-        stream.end();
-    })
+    fs.appendFileSync("\r\n" + "log.txt","***ERROR***\r\n")
+    fs.appendFileSync("log.txt","Guild ID: " + GUILD_ID + "\r\n")
+    fs.appendFileSync("log.txt","Friendly error message: " + ERROR + "\r\n")
+    fs.appendFileSync("log.txt","Technical info: " + ERROR_CONTENT + "\r\n")
+
     //Log the error in the console
     console.log("ERROR: " + ERROR)
 }
@@ -392,6 +388,7 @@ bot.on('guildCreate', GUILD => {
 bot.on('ready', () => {
     console.log('LookingForGroup: A project by the LFG development team licesnsed under the MIT Public License.');
     console.log('Bot is ready.');
+    logError("This is a fake error!", "Fake Error", 1234)
     bot.generateInvite(['ADMINISTRATOR', 'KICK_MEMBERS', 'MANAGE_CHANNELS', 'ADD_REACTIONS', 'READ_MESSAGES', 'SEND_MESSAGES', 'SEND_TTS_MESSAGES', 'MANAGE_MESSAGES', 'MENTION_EVERYONE', 'CONNECT', 'SPEAK', 'MOVE_MEMBERS', 'USE_VAD', 'CHANGE_NICKNAME', 'MANAGE_ROLES']).then(invite => {
         console.log(`Use the following link to invite:\n\n${invite}\n`);
     });
