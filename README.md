@@ -1,3 +1,6 @@
+# This repository is no longer maintained!
+I do not recommend forking it. There are several incompatibilities with the Discord API. You will need to rework the entire command system if you want to use it!
+
 # LookingForGroup
 Welcome! Looking For Group or LFG for short is a bot for the widely popular gamer messaging service [Discord](https://discordapp.com).
 
